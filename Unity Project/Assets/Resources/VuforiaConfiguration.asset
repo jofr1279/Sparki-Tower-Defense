@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: VuforiaConfiguration
   m_EditorClassIdentifier: 
   vuforia:
-    vuforiaLicenseKey: 
+    vuforiaLicenseKey: AY0NEGL/////AAABGY2TF3pR5EeKhzRqYGwPxYR7B61NmaQedhkJ1vfTNtGN439ofIMsRUkj+gfzhbKB1F53pbY+5gMS1tOBkTZFHv5Y10PaIE23zOY+GV7SvlIHvhToUbgy+121R3uK8qYXs/L+xdgJWyqFaXGtLhjrNsGAAMBNXK/uVsDGhNEIa4taBmeX13a8MAmXulQ3LF+dQ79BDSOxNjGyF3M2F8kYJbxj9Z3IgyLKi/FsrmE1TM+w9tFUMzEN+C0GOGRw6UcspcnCNeblj8RyRJoX2tKIwUooopGeBJHAmG8cJZmXRcztkh2z8vWO0w8Zbcu1+ukwP5s5DeAa9hEvyHN7ST6rmmA9HHgygK2k1BKLeMgDVyQb
     ufoLicenseKey: QWRoT1hHMy8vLy8vQUFBQUtHQ045aGIxd0VDdXFSakpLZDNjL05JRndsazNLQ0xHenJwVk02S1VaaTJzTnNLY2x1aGlXYzdlakVTN29kWm5KU0txNC96WkZxQytGQWxjR3RwcjJuVlJseFlmZ2FCbFZGUnRNNmZZeEJUdHFNR3diOFpaVWl3VFlHMFUzbTRaSkVhMHpVMGhVd1FDbkgzTVpsdks3Qm5veXVTV2UrMFRsRGV3dHJPWEFLaUk1RG95VjRZTjFtUzZjZDRMaU1IUlh5aWdwVDNjVEJiRkdSbkJvckc0LzNweHlrWFFHRWxyYUNNbkcvZ2hkQmhFY0VnSWEyanFma1k5bWVlbkpVNFh1cEVuc0Q1UVR1b0UvQjRXQmhiaGcvVkZkeXYzZjhGMjltN2k4ZUt1bzJNL0JKaFd5WXpvdjRlbXJTMUJ2WjhIOUllRTVRTWdqOEZrbm0vbk4wa1AxTlhwVWFmTmJGY2x5Nnoydzc3dm5rdis=
     delayedInitialization: 0
     cameraDeviceModeSetting: -1
@@ -21,8 +21,8 @@ MonoBehaviour:
     maxSimultaneousObjectTargets: 1
     useDelayedLoadingObjectTargets: 0
     modelTargetRecoWhileExtendedTracked: 1
-    version: 1.0.0
-    eulaAcceptedVersions: 
+    version: 8.3.8
+    eulaAcceptedVersions: '{"Values":["8.3"]}'
   digitalEyewear:
     cameraOffset: 0.06
     distortionRenderingLayer: 31
@@ -66,6 +66,6 @@ MonoBehaviour:
     autoInitTracker: 0
     autoStartTracker: 0
   webcam:
-    deviceNameSetInEditor: 
+    deviceNameSetInEditor: Logitech HD Webcam C525
     turnOffWebCam: 0
     renderTextureLayer: 30
