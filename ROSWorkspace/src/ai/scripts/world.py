@@ -26,6 +26,7 @@ class World(object):
         """
 
         # TODO (Tiffany and Elizabeth): Implement this function.
+
         # Hint: Use values like...
         #        - self.sparki.position.x
         #        - self.sparki.position.y
@@ -34,4 +35,26 @@ class World(object):
         #        - self.goal_position.x
         #        - self.goal_position.y
 
-        return Direction.NORTH
+        return None
+
+    def best_target(self):
+        """ Calculates the best target Sparki should shoot at. If there is a target in the path towards the goal, it
+            should return that. If there is no target in the path, it should return the closest target. If there are no
+            targets in the laser range, it should return None.
+
+        @rtype: Vector2 | None
+        """
+
+        # TODO (Tiffany and Elizabeth): Implement this function.
+
+        # Hint: Use values like...
+        #        - self.sparki.position.x
+        #        - self.sparki.position.y
+        #        - self.sparki.direction
+        #        - self.targets
+        #        - self.goal_position.x
+        #        - self.goal_position.y
+
+        return None
+
+

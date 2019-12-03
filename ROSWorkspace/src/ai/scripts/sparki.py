@@ -23,12 +23,15 @@ class Direction(Enum):
 
 class Sparki(object):
 
-    def __init__(self, position=None, direction=Direction.NORTH):
+    def __init__(self):
         """ Constructor for Sparki.
-
-        @type position: Vector2
-        @type direction: Direction
         """
 
-        self.position = Vector2(0, 0) if position is None else position
-        self.direction = direction
+        self.position = Vector2(0, 0)
+        self.direction = Direction.NORTH
+        self.laser_range = 0
+
+        self.servo_range = 0
+        """ The range (degrees) in which the servo can move. If this number is 45, then Sparki can move his servo 45
+            degrees in each direction, or a total of 90 degrees.
+        """
