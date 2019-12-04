@@ -24,6 +24,8 @@ class World(object):
         self.obstacles = [[False] * size.x for _ in range(size.y)]
         self.targets = [[False] * size.x for _ in range(size.y)]
 
+        self._init_topics()
+
     def _init_topics(self):
         rospy.Subscriber('/unity/add_object', String, self.add_object)
         rospy.Subscriber('/unity/remove_object', String, self.remove_object)
@@ -99,4 +101,18 @@ class World(object):
 
         return None
 
+    def best_target_angle(self):
+        """ Calculates the angle (in degrees) Sparki's servo should face so that is faces the best target. If there are
+            no targets in the laser range, it should return None.
 
+        @rtype: int | None
+        """
+
+        best_target = self.best_target()
+
+        if best_target is None:
+            return None
+
+        # TODO (Tiffany and Elizabeth): Implement this function.
+
+        return 0

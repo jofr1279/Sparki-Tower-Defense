@@ -1,10 +1,11 @@
 import rospy
 
+from config import SPARKI_SERVO_RANGE
 from pose import Vector2, Direction
-from helper import pose_to_vector, pose_to_direction
+from helper import pose_to_vector, pose_to_direction, to_float_array
 
 from geometry_msgs.msg import Pose2D
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Int16, Float32MultiArray
 
 
 class Sparki(object):
@@ -27,16 +28,20 @@ class Sparki(object):
         self.position = Vector2(0, 0)
         self.direction = Direction.NORTH
 
-        self.motor_publisher = rospy.Publisher('/sparki/motor_command', Float32MultiArray, queue_size=10)
+        self._init_topics()
 
     def _init_topics(self):
         rospy.Subscriber('/sparki/odometry', Pose2D, self._odometry_update)
+
+        self.motor_publisher = rospy.Publisher('/sparki/motor_command', Float32MultiArray, queue_size=10)
+        self.servo_publisher = rospy.Publisher('/sparki/set_servo', Int16, queue_size=10)
 
     def _odometry_update(self, pose):
         """ Updates the position and direction data using the data given by the Sparki node.
 
         @type pose: Pose2D
         """
+
         self.odometry_update(pose_to_vector(pose), pose_to_direction(pose))
 
     def odometry_update(self, position, direction):
@@ -55,7 +60,17 @@ class Sparki(object):
         @type direction: Direction | None
         """
 
-        array = Float32MultiArray()
-        array.data = 0, 0 if direction is None else Direction.to_motor(direction)
+        array = to_float_array((0, 0) if direction is None else Direction.to_motor(direction))
 
         self.motor_publisher.publish(array)
+
+    def look(self, angle):
+        """ Sets Sparki's servo to look in the desired angle.
+
+        @type angle: int
+        @param angle: The angle (in degrees) the servo should look at.
+        """
+
+        assert -SPARKI_SERVO_RANGE < angle < SPARKI_SERVO_RANGE
+
+        self.servo_publisher(angle)

@@ -1,5 +1,7 @@
 import math
 
+from std_msgs.msg import Float32MultiArray
+
 from pose import Vector2, Direction
 
 
@@ -25,3 +27,15 @@ def pose_to_direction(pose):
     """
 
     return Direction.from_num(int(pose.theta // (math.pi / 2)))
+
+
+def to_float_array(data):
+    """
+
+    @type data: tuple | Vector2
+    @rtype: Float32MultiArray
+    """
+
+    array = Float32MultiArray()
+    array.data = data if isinstance(data, tuple) else data.x, data.y
+    return array
