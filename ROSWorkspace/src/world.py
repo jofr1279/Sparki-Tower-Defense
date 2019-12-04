@@ -74,7 +74,7 @@ class World(object):
         # Movement arrays
         x_m = [-1, 0, 1, -1, 0, 1, -1, 1]
         y_m = [-1, -1, -1, 1, 1, 1, 0, 0]
-        
+
         dist = [[0] * size.x for _ in range(size.y)]
         prev = [[-1] * size.x for _ in range(size.y)]
         Q_cost = []
@@ -90,8 +90,10 @@ class World(object):
             element = min(Q_cost, key=lambda x:x[1])
             Q_cost.remove(element)
             u = element[0]
+            for i in range(len(x_m)):
+                next_direction = Vector2(u.x + x_m[i], u.y + y_m[i])
+               if (not in_bounds(next_direction) or (next_direction not in [x[0] for x in Q_cost])):
 
-            for v in range [Vector2(u.x + x_m[i], u.y + y_m[i])]
 
 
         # Hint: Use values like...
