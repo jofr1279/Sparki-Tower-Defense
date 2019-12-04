@@ -17,6 +17,7 @@ class AINode(object):
 
     def __init__(self):
         rospy.init_node(NODE_NAME, anonymous=True)
+        self._init_topics()
 
         self.sparki = Sparki()
         self.world = World(WORLD_SIZE, self.sparki, GOAL_POSITION)
@@ -28,7 +29,7 @@ class AINode(object):
     def _init_topics(self):
         rospy.Subscriber('sparki', String, self._sparki_update)
 
-        self.ai_publisher = rospy.Publisher('ai', String)
+        self.ai_publisher = rospy.Publisher('ai', String, queue_size=10)
 
     def _sparki_update(self, message):
         """ The handler function when Sparki's data is updated. Upon receiving the data, it updates the Sparki instance,

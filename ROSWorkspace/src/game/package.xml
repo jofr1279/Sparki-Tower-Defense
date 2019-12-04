@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>game</name>
+  <version>1.0.0</version>
+  <description>The package that handles game state and logic.</description>
+
+  <maintainer email="joshua.l.franklin@colorado.edu">Joshua Franklin</maintainer>
+  <maintainer email="jacob.malcy@colorado.edu">Jacob Malcy</maintainer>
+  <maintainer email="tiffany.phan@colorado.edu">Tiffany Phan</maintainer>
+  <maintainer email="elqi4234@colorado.edu">Elizabeth Qui</maintainer>
+
+  <license>MIT</license>
+
+  <url type="website">https://github.com/jofr1279/Sparki-Tower-Defense</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+
+  <exec_depend>rospy</exec_depend>
+</package>
