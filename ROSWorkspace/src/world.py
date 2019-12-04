@@ -62,14 +62,14 @@ class World(object):
         self.targets[position.x][position.y] = False
         self.obstacles[position.x][position.y] = False
 
-    def in_bounds(coordinate):
+    def in_bounds(self, coordinate):
         """
 
         @type coordinate: Vector2
         """
-        return (0, 0) <= coordinate < Vector2(size.x, size.y)
+        return (0, 0) <= coordinate < Vector2(self.size.x, self.size.y)
 
-    def get_travel_cost(source, dest):
+    def get_travel_cost(self, source, dest):
         """
 
         @type source: Vector 2
@@ -85,15 +85,7 @@ class World(object):
 
         return 1000
 
-    def best_direction(self):
-        """ Calculates the best direction Sparki should face to get to the goal position. For simplicity, assume Sparki
-            can only face in one of the four cardinal directions. Returns None if there is no possible path to the goal.
-
-        @rtype: Direction | None
-        """
-
-        # TODO (Tiffany and Elizabeth): Implement this function.
-
+    def run_dijkstra(self):
         # Movement arrays
         x_m = [-1, 0, 1, -1, 0, 1, -1, 1]
         y_m = [-1, -1, -1, 1, 1, 1, 0, 0]
@@ -128,20 +120,41 @@ class World(object):
                         if element[0] == next_direction:
                             Q_cost[index] = (element[0], alt)
                             break
+        return prev
+
+    def reconstruct_path(self, prev):
+        current = self.goal_position
+        final_path = []
+
+        while current != self.sparki.position:
+            final_path.append(current)
+            current = current[current.x][current.y]
+
+        return final_path
         
-        # if prev[0] > 0: 
-             
+        
 
+    def best_direction(self):
+        """ Calculates the best direction Sparki should face to get to the goal position. For simplicity, assume Sparki
+            can only face in one of the four cardinal directions. Returns None if there is no possible path to the goal.
 
-        # Hint: Use values like...
-        #        - self.sparki.position.x
-        #        - self.sparki.position.y
-        #        - self.sparki.direction
-        #        - self.obstacles
-        #        - self.goal_position.x
-        #        - self.goal_position.y
+        @rtype: Direction | None
+        """
 
-        return None
+        # TODO (Tiffany and Elizabeth): Implement this function.
+        prev = run_dijkstra()
+        final_path = reconstruct_path(prev)
+
+        diff = final_path[0] - self.sparki.position
+
+        if diff[0] == 1:
+            return Direction.EAST 
+        if diff[0] == -1:
+            return Direction.WEST
+        if diff[1] == 1:
+            return Direction.NORTH
+        if diff[1] == -1:
+            return Direction.SOUTH
 
     def best_target(self):
         """ Calculates the best target Sparki should shoot at. If there is a target in the path towards the goal, it
