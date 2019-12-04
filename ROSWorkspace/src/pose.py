@@ -24,10 +24,20 @@ class Direction(Enum):
 
     @staticmethod
     def from_num(num):
+        """ Converts a number ranging from 0 to 3 into a corresponding cardinal direction clockwise.
+
+        @type num: int
+        """
+
         return [Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST][num]
 
     @staticmethod
     def to_motor(direction):
+        """ Converts a direction into its corresponding motor power values.
+
+        @type direction: Direction
+        """
+
         return {
             Direction.NORTH: (1, 1),
             Direction.EAST: (1, -1),

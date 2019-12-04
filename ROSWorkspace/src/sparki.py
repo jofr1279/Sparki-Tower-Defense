@@ -1,7 +1,9 @@
 import rospy
 
 from pose import Vector2, Direction
+from helper import pose_to_vector, pose_to_direction
 
+from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Float32MultiArray
 
 
@@ -27,8 +29,18 @@ class Sparki(object):
 
         self.motor_publisher = rospy.Publisher('/sparki/motor_command', Float32MultiArray, queue_size=10)
 
-    def update(self, position, direction):
-        """ Updates the instance data using the data given by the Sparki node.
+    def _init_topics(self):
+        rospy.Subscriber('/sparki/odometry', Pose2D, self._odometry_update)
+
+    def _odometry_update(self, pose):
+        """ Updates the position and direction data using the data given by the Sparki node.
+
+        @type pose: Pose2D
+        """
+        self.odometry_update(pose_to_vector(pose), pose_to_direction(pose))
+
+    def odometry_update(self, position, direction):
+        """ Updates the position and direction.
 
         @type position: Vector2
         @type direction: Direction
@@ -43,11 +55,7 @@ class Sparki(object):
         @type direction: Direction | None
         """
 
-        arr = Float32MultiArray()
+        array = Float32MultiArray()
+        array.data = 0, 0 if direction is None else Direction.to_motor(direction)
 
-        if direction is None:
-            arr.data = 0, 0
-        else:
-            arr.data = Direction.to_motor(direction)
-
-        self.motor_publisher.publish(arr)
+        self.motor_publisher.publish(array)

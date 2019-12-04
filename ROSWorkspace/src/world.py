@@ -1,3 +1,9 @@
+import json
+
+import rospy
+
+from std_msgs.msg import String
+
 from sparki import Vector2, Direction, Sparki
 
 
@@ -17,6 +23,42 @@ class World(object):
 
         self.obstacles = [[False] * size.x for _ in range(size.y)]
         self.targets = [[False] * size.x for _ in range(size.y)]
+
+    def _init_topics(self):
+        rospy.Subscriber('/unity/add_object', String, self.add_object)
+        rospy.Subscriber('/unity/remove_object', String, self.remove_object)
+
+    def _add_object(self, string):
+        """
+
+        @type string: String
+        """
+        data = json.loads(string.data)
+        self.add_object(Vector2(data['x'], data['y']), data['target'])
+
+    def _remove_object(self, string):
+        """
+
+        @type string: String
+        """
+        data = json.loads(string.data)
+        self.remove_object(Vector2(data['x'], data['y']))
+
+    def add_object(self, position, target=False):
+        """
+
+        @type target: bool
+        @type position: Vector2
+        """
+        (self.targets if target else self.obstacles)[position.x][position.y] = True
+
+    def remove_object(self, position):
+        """
+
+        @type position: Vector2
+        """
+        self.targets[position.x][position.y] = False
+        self.obstacles[position.x][position.y] = False
 
     def best_direction(self):
         """ Calculates the best direction Sparki should face to get to the goal position. For simplicity, assume Sparki
