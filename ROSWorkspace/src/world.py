@@ -69,7 +69,21 @@ class World(object):
         """
         return (0, 0) <= coordinate < Vector2(size.x, size.y)
 
-    def get_travel_cost():
+    def get_travel_cost(source, dest):
+        """
+
+        @type source: Vector 2
+        @type dest: Vector 2
+        """
+
+        x_diff = abs(source[0] - dest[0])
+        y_diff = abs(source[1] - dest[1])
+        if in_bounds(source) and in_bounds(dest): # if they're in bounds
+            if (x_diff or y_diff) and not (x_diff and y_diff) # if one is non-zero but not both
+                if not (obstacles[source] or obstacles[dest]): # if they are unoccupied
+                    return 1
+
+        return 1000
 
     def best_direction(self):
         """ Calculates the best direction Sparki should face to get to the goal position. For simplicity, assume Sparki
@@ -105,6 +119,18 @@ class World(object):
                     continue
 
                 alt = dist[u[0]][u[1]] + get_travel_cost(u, next_direction)
+
+                if alt < dist[next_direction[0]][next_direction[1]]:
+                    dist[next_direction[0]][next_direction[1]] = alt
+                    prev[next_direction[0]][next_direction[1]] = u
+
+                    for index, element in enumerate(Q_cost):
+                        if element[0] == next_direction:
+                            Q_cost[index] = (element[0], alt)
+                            break
+        
+        # if prev[0] > 0: 
+             
 
 
         # Hint: Use values like...
