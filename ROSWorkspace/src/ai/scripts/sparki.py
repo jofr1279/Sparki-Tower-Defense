@@ -1,7 +1,3 @@
-import rospy
-import json
-
-from std_msgs.msg import String
 from enum import Enum
 
 
@@ -28,23 +24,21 @@ class Direction(Enum):
 class Sparki(object):
 
     def __init__(self):
-        """ Constructor for Sparki.
-        """
-
         self.position = Vector2(0, 0)
         self.direction = Direction.NORTH
+
         self.laser_range = 0
+        """ The range (in grid units) in which Sparki's laser can fire. """
 
         self.servo_range = 0
-        """ The range (degrees) in which the servo can move. If this number is 45, then Sparki can move his servo 45
-            degrees in each direction, or a total of 90 degrees.
+        """ The range (in degrees) in which the servo can move. If this number is 45, then Sparki can move his servo 45
+            degrees in each direction, or a total of 90 degrees. """
+
+    def update(self, data):
+        """ Updates the instance data using the data given by the Sparki node.
+
+        @type data: dict
         """
-
-        rospy.Subscriber('sparki', String, self.update)
-
-    def update(self, message):
-        data = json.loads(message.data)
-
         try:
             self.position.x = data['position']['x']
             self.position.y = data['position']['y']
