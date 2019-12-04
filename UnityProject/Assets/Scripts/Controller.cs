@@ -7,11 +7,13 @@ public class Controller : MonoBehaviour {
     public GameObject tower;
     public Transform scaler;
     public Text moneyText;
+    public UIController uiController;
     
     public int money;
     public int towerCost;
 
-    bool fingerDown = false;
+    private bool fingerDown;
+    private ROS ros;
 
     private void Start() {
         UpdateMoneyText();
@@ -35,6 +37,10 @@ public class Controller : MonoBehaviour {
         else {
             fingerDown = false;
         }
+    }
+    
+    void Connect(string address) {
+        ros = new ROS(address);
     }
 
     void BuildTurret(Vector2 position) {

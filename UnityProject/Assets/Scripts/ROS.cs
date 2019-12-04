@@ -1,15 +1,16 @@
 ﻿using RosSharp.RosBridgeClient;
+using RosSharp.RosBridgeClient.Protocols;
 using RosSharp.RosBridgeClient.MessageTypes.Geometry;
 using RosSharp.RosBridgeClient.MessageTypes.Std;
-using RosSharp.RosBridgeClient.Protocols;
 
 using UnityEngine;
 
 public class ROS { 
     RosSocket socket;
 
-    public ROS(IProtocol address) {
-        socket = new RosSocket(address);
+    public ROS(string address) {
+        Debug.Log($"Attempting connection to {address}.");
+        socket = new RosSocket(new WebSocketNetProtocol(address));
         InitTopics();
     }
 
