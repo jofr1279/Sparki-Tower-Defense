@@ -1,3 +1,7 @@
+import rospy
+import json
+
+from std_msgs.msg import String
 from enum import Enum
 
 
@@ -35,3 +39,18 @@ class Sparki(object):
         """ The range (degrees) in which the servo can move. If this number is 45, then Sparki can move his servo 45
             degrees in each direction, or a total of 90 degrees.
         """
+
+        rospy.Subscriber('sparki', String, self.update)
+
+    def update(self, message):
+        data = json.loads(message.data)
+
+        try:
+            self.position.x = data['position']['x']
+            self.position.y = data['position']['y']
+            self.direction = data['direction']
+            self.laser_range = data['laser_range']
+            self.servo_range = data['servo_range']
+
+        except KeyError:
+            print 'Invalid data received from sparki node.'
