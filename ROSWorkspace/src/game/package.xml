@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>game</name>
+  <name>ai</name>
   <version>1.0.0</version>
-  <description>The package that handles game state and logic.</description>
+  <description>The package that handles Sparki's AI.</description>
 
   <maintainer email="joshua.l.franklin@colorado.edu">Joshua Franklin</maintainer>
   <maintainer email="jacob.malcy@colorado.edu">Jacob Malcy</maintainer>
