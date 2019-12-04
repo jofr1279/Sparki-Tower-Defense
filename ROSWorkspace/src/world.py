@@ -62,6 +62,15 @@ class World(object):
         self.targets[position.x][position.y] = False
         self.obstacles[position.x][position.y] = False
 
+    def in_bounds(coordinate):
+        """
+
+        @type coordinate: Vector2
+        """
+        return (0, 0) <= coordinate < Vector2(size.x, size.y)
+
+    def get_travel_cost():
+
     def best_direction(self):
         """ Calculates the best direction Sparki should face to get to the goal position. For simplicity, assume Sparki
             can only face in one of the four cardinal directions. Returns None if there is no possible path to the goal.
@@ -92,8 +101,10 @@ class World(object):
             u = element[0]
             for i in range(len(x_m)):
                 next_direction = Vector2(u.x + x_m[i], u.y + y_m[i])
-               if (not in_bounds(next_direction) or (next_direction not in [x[0] for x in Q_cost])):
+                if (not in_bounds(next_direction) or (next_direction not in [x[0] for x in Q_cost])):
+                    continue
 
+                alt = dist[u[0]][u[1]] + get_travel_cost(u, next_direction)
 
 
         # Hint: Use values like...
