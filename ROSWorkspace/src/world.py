@@ -25,6 +25,25 @@ class World(object):
 
         self._init_topics()
 
+    def __repr__(self):
+        string = 'World:\n'
+        for row in range(self.size.x):
+            for col in range(self.size.y):
+                if self.sparki.position == Vector2(row, col):
+                    string += 'S'
+                elif self.goal_position == Vector2(row, col):
+                    string += 'G'
+                elif self.targets[row][col]:
+                    string += 'T'
+                elif self.obstacles[row][col]:
+                    string += 'O'
+                else:
+                    string += '_'
+
+            string += '\n'
+
+        return string
+
     def _init_topics(self):
         rospy.Subscriber('/unity/add_object', String, self.add_object)
         rospy.Subscriber('/unity/remove_object', String, self.remove_object)
@@ -146,16 +165,15 @@ class World(object):
         prev = self.run_dijkstra()
 
         final_path = self.reconstruct_path(prev)
-
         diff = final_path[-2] - self.sparki.position
 
-        if diff.y == -1:
-            return Direction.NORTH
         if diff.x == -1:
-            return Direction.EAST
+            return Direction.NORTH
         if diff.y == 1:
-            return Direction.SOUTH
+            return Direction.EAST
         if diff.x == 1:
+            return Direction.SOUTH
+        if diff.y == -1:
             return Direction.WEST
 
     def best_target(self):

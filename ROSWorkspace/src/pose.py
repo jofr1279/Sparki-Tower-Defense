@@ -13,7 +13,10 @@ class Vector2(object):
         return '({}, {})'.format(self.x, self.y)
 
     def __eq__(self, other):
-        return self.x == other.x and self.y == other.y
+        if isinstance(other, Vector2):
+            return self.x == other.x and self.y == other.y
+
+        return False
 
     def __sub__(self, other):
         return Vector2(
