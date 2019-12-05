@@ -48,11 +48,14 @@ public class Controller : MonoBehaviour {
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit)) {
             if (hit.transform.CompareTag("Raycast Blanket")) {
-                var gridPoint = new Vector2((float) Math.Round(hit.point.x), (float) Math.Round(hit.point.y));
-                Instantiate(tower, gridPoint, scaler.rotation, scaler);
+                var local = scaler.transform.InverseTransformPoint(hit.point);
+                var gridPoint = new Vector3((float) Math.Round(local.x), 0, (float) Math.Round(local.z));
+                Debug.Log($"{hit.point} -> {local} -> {gridPoint}");
+                var turret = Instantiate(tower, Vector3.zero, scaler.rotation, scaler);
+                turret.transform.localPosition = gridPoint;
+                
             }
         }
-        Debug.Log(position);
     }
 
     void UpdateMoneyText() {
