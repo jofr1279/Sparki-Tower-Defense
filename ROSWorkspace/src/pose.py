@@ -10,10 +10,16 @@ class Vector2(object):
         self.y = y
 
     def __repr__(self):
-        return '({}, {})'.format(self.x, self.y)
+        return 'Vector2({}, {})'.format(self.x, self.y)
 
     def __eq__(self, other):
-        return self.x == other.x and self.y == other.y
+        return (self.x == other.x and self.y == other.y) if isinstance(other, Vector2) else False
+
+    def __add__(self, other):
+        return Vector2(
+            self.x + other.x,
+            self.y + other.y,
+        )
 
     def __sub__(self, other):
         return Vector2(

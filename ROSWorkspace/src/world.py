@@ -19,11 +19,32 @@ class World(object):
         self.size = size
         self.sparki = sparki
         self.goal_position = goal_position
+        self.valid_direction_x = [0, 0, -1, 1]
+        self.valid_direction_y = [-1, 1, 0, 0]
 
         self.obstacles = [[False] * size.x for _ in range(size.y)]
         self.targets = [[False] * size.x for _ in range(size.y)]
 
         self._init_topics()
+
+    def __repr__(self):
+        string = 'World:\n'
+        for row in range(self.size.x):
+            for col in range(self.size.y):
+                if self.sparki.position == Vector2(row, col):
+                    string += 'S'
+                elif self.goal_position == Vector2(row, col):
+                    string += 'G'
+                elif self.targets[row][col]:
+                    string += 'T'
+                elif self.obstacles[row][col]:
+                    string += 'O'
+                else:
+                    string += '_'
+
+            string += '\n'
+
+        return string
 
     def _init_topics(self):
         rospy.Subscriber('/unity/add_object', String, self.add_object)
@@ -88,8 +109,6 @@ class World(object):
         return 1000
 
     def run_dijkstra(self):
-        x_m = [0, 0, -1, 1]
-        y_m = [-1, 1, 0, 0]
 
         dist = [[0] * self.size.x for _ in range(self.size.y)]
         prev = [[-1] * self.size.x for _ in range(self.size.y)]
@@ -108,8 +127,8 @@ class World(object):
             Q_cost.remove(element)
             u = element[0]
 
-            for i in range(len(x_m)):
-                next_direction = Vector2(u.x + x_m[i], u.y + y_m[i])
+            for i in range(len(self.valid_direction_x)):
+                next_direction = Vector2(u.x + self.valid_direction_x[i], u.y + self.valid_direction_y[i])
                 if (not self.in_bounds(next_direction)) or (next_direction not in [x[0] for x in Q_cost]):
                     continue
 
@@ -146,16 +165,27 @@ class World(object):
         prev = self.run_dijkstra()
 
         final_path = self.reconstruct_path(prev)
-
         diff = final_path[-2] - self.sparki.position
+        print(self.sparki.position) 
 
-        if diff.y == -1:
-            return Direction.NORTH
+        isObstacle = []
+        for i in range(len(self.valid_direction_x)):
+
+            next_direction = Vector2(self.sparki.position.x + self.valid_direction_x[i], self.sparki.position.y + self.valid_direction_y[i])
+            if self.in_bounds(next_direction):
+                isObstacle.append(self.obstacles[next_direction.x][next_direction.y])
+
+        if all(isObstacle): 
+            return None
+
+
         if diff.x == -1:
-            return Direction.EAST
+            return Direction.NORTH
         if diff.y == 1:
-            return Direction.SOUTH
+            return Direction.EAST
         if diff.x == 1:
+            return Direction.SOUTH
+        if diff.y == -1:
             return Direction.WEST
 
     def best_target(self):
