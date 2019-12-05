@@ -63,6 +63,28 @@ class TestWorld(unittest.TestCase):
         self.sparki.servo_range = 100
         self.assertEqual(self.world.best_target(), Vector2(0, 1))
 
+    def test_best_angle(self):
+        self.assertIsNone(self.world.best_target_angle())
+
+        # Sparki facing east with an obstacle to the east
+        self.sparki.direction = Direction.EAST
+        self.world.add_object(Vector2(0, 1), False)
+        self.assertIsNone(self.world.best_target_angle())
+        self.world.remove_object(Vector2(0, 1))
+
+        # Sparki facing east with a target to the east
+        self.world.add_object(Vector2(0, 1), True)
+        self.assertEqual(self.world.best_target_angle(), 0)
+
+        # Sparki facing west with a target to the east
+        self.sparki.direction = Direction.WEST
+        self.assertIsNone(self.world.best_target_angle())
+
+        # Sparki facing south with a target to the east with large servo range
+        self.sparki.direction = Direction.SOUTH
+        self.sparki.servo_range = 100
+        self.assertEqual(self.world.best_target_angle(), -90)
+
 
 if __name__ == '__main__':
     unittest.main()
