@@ -67,7 +67,13 @@ class World(object):
 
         @type coordinate: Vector2
         """
-        return (0, 0) <= coordinate < Vector2(self.size.x, self.size.y)
+    
+        if 0 <= coordinate.x and coordinate.x < self.size.x:
+            if 0 <= coordinate.y and coordinate.y < self.size.y:
+                return True
+
+        return False
+
 
     def get_travel_cost(self, source, dest):
         """
@@ -79,7 +85,7 @@ class World(object):
         x_diff = abs(source[0] - dest[0])
         y_diff = abs(source[1] - dest[1])
         if in_bounds(source) and in_bounds(dest): # if they're in bounds
-            if (x_diff or y_diff) and not (x_diff and y_diff) # if one is non-zero but not both
+            if (x_diff or y_diff) and not (x_diff and y_diff): # if one is non-zero but not both
                 if not (obstacles[source] or obstacles[dest]): # if they are unoccupied
                     return 1
 
@@ -87,34 +93,41 @@ class World(object):
 
     def run_dijkstra(self):
         # Movement arrays
-        x_m = [-1, 0, 1, -1, 0, 1, -1, 1]
-        y_m = [-1, -1, -1, 1, 1, 1, 0, 0]
-
-        dist = [[0] * size.x for _ in range(size.y)]
-        prev = [[-1] * size.x for _ in range(size.y)]
+        x_m = [0, 0, -1, 1]
+        y_m = [-1, 1, 0, 0]
+        
+        dist = [[0] * self.size.x for _ in range(self.size.y)]
+        prev = [[-1] * self.size.x for _ in range(self.size.y)]
         Q_cost = []
 
-        for x in size.x:
-            for y in size.y:
+        for x in range(self.size.x):
+            for y in range(self.size.y):
                 if not (self.sparki.position.x == x and self.sparki.position.y):
                     dist[x][y] = 999999
-            coord = Vector2(x, y)
-            Q_cost.append([coord, dist[x][y]])
+                coord = Vector2(x, y)
+                Q_cost.append([coord, dist[x][y]])
 
         while Q_cost:
             element = min(Q_cost, key=lambda x:x[1])
             Q_cost.remove(element)
             u = element[0]
+
             for i in range(len(x_m)):
                 next_direction = Vector2(u.x + x_m[i], u.y + y_m[i])
-                if (not in_bounds(next_direction) or (next_direction not in [x[0] for x in Q_cost])):
+                # print('Next Direction', next_direction)
+                # print('in bounds', self.in_bounds(next_direction), (next_direction not in [x[0] for x in Q_cost]))
+                if (not self.in_bounds(next_direction)) or (next_direction not in [x[0] for x in Q_cost]):
+                    # print('grid:', self.size)
                     continue
 
+                
+            
                 alt = dist[u[0]][u[1]] + get_travel_cost(u, next_direction)
 
                 if alt < dist[next_direction[0]][next_direction[1]]:
                     dist[next_direction[0]][next_direction[1]] = alt
                     prev[next_direction[0]][next_direction[1]] = u
+                    print('fuck {}'.format((u.x, u.y)))
 
                     for index, element in enumerate(Q_cost):
                         if element[0] == next_direction:
@@ -123,12 +136,14 @@ class World(object):
         return prev
 
     def reconstruct_path(self, prev):
+        # print('Prev', prev)
         current = self.goal_position
         final_path = []
 
         while current != self.sparki.position:
             final_path.append(current)
-            current = current[current.x][current.y]
+            # print(prev)
+            current = prev[current.x][current.y]
 
         return final_path
         
@@ -142,8 +157,10 @@ class World(object):
         """
 
         # TODO (Tiffany and Elizabeth): Implement this function.
-        prev = run_dijkstra()
-        final_path = reconstruct_path(prev)
+        prev = self.run_dijkstra()
+        # print(prev)
+
+        final_path = self.reconstruct_path(prev)
 
         diff = final_path[0] - self.sparki.position
 
