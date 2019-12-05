@@ -71,6 +71,29 @@ class World(object):
 
         # TODO (Tiffany and Elizabeth): Implement this function.
 
+        # Movement arrays
+        x_m = [-1, 0, 1, -1, 0, 1, -1, 1]
+        y_m = [-1, -1, -1, 1, 1, 1, 0, 0]
+        
+        dist = [[0] * size.x for _ in range(size.y)]
+        prev = [[-1] * size.x for _ in range(size.y)]
+        Q_cost = []
+
+        for x in size.x:
+            for y in size.y:
+                if not (self.sparki.position.x == x and self.sparki.position.y):
+                    dist[x][y] = 999999
+            coord = Vector2(x, y)
+            Q_cost.append([coord, dist[x][y]])
+
+        while Q_cost:
+            element = min(Q_cost, key=lambda x:x[1])
+            Q_cost.remove(element)
+            u = element[0]
+
+            for v in range [Vector2(u.x + x_m[i], u.y + y_m[i])]
+
+
         # Hint: Use values like...
         #        - self.sparki.position.x
         #        - self.sparki.position.y
