@@ -127,8 +127,7 @@ class World(object):
                 if alt < dist[next_direction[0]][next_direction[1]]:
                     dist[next_direction[0]][next_direction[1]] = alt
                     prev[next_direction[0]][next_direction[1]] = u
-                    print('fuck {}'.format((u.x, u.y)))
-
+                   
                     for index, element in enumerate(Q_cost):
                         if element[0] == next_direction:
                             Q_cost[index] = (element[0], alt)
