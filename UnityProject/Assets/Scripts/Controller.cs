@@ -11,7 +11,7 @@ public class Controller : MonoBehaviour {
     public int money;
     public int towerCost;
 
-    bool _fingerDown = false;
+    bool fingerDown = false;
 
     private void Start() {
         UpdateMoneyText();
@@ -19,8 +19,8 @@ public class Controller : MonoBehaviour {
 
     void Update() {
         if (Input.touchCount >= 1) {
-            if (_fingerDown) return;
-            _fingerDown = true;
+            if (fingerDown) return;
+            fingerDown = true;
             
             if (money >= towerCost) {
                 Debug.Log("Building...");
@@ -33,7 +33,7 @@ public class Controller : MonoBehaviour {
             }
         }
         else {
-            _fingerDown = false;
+            fingerDown = false;
         }
     }
 
