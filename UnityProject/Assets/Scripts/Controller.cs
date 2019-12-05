@@ -44,11 +44,12 @@ public class Controller : MonoBehaviour {
     }
 
     void BuildTurret(Vector2 position) {
-        Ray ray = arCamera.ScreenPointToRay(Input.GetTouch(0).position);
+        var ray = arCamera.ScreenPointToRay(Input.GetTouch(0).position);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit)) {
             if (hit.transform.CompareTag("Raycast Blanket")) {
-                Instantiate(tower, hit.point, scaler.rotation, scaler);
+                var gridPoint = new Vector2((float) Math.Round(hit.point.x), (float) Math.Round(hit.point.y));
+                Instantiate(tower, gridPoint, scaler.rotation, scaler);
             }
         }
         Debug.Log(position);

@@ -102,7 +102,7 @@ class World(object):
 
         for x in range(self.size.x):
             for y in range(self.size.y):
-                if not (self.sparki.position.x == x and self.sparki.position.y):
+                if not (self.sparki.position.x == x and self.sparki.position.y == y):
                     dist[x][y] = 999999
                 coord = Vector2(x, y)
                 Q_cost.append([coord, dist[x][y]])
