@@ -178,7 +178,6 @@ class World(object):
         if all(isObstacle): 
             return None
 
-
         if diff.x == -1:
             return Direction.NORTH
         if diff.y == 1:
