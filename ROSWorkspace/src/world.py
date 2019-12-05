@@ -95,8 +95,8 @@ class World(object):
     def get_travel_cost(self, source, dest):
         """
 
-        @type source: Vector 2
-        @type dest: Vector 2
+        @type source: Vector2
+        @type dest: Vector2
         """
 
         x_diff = abs(source.x - dest.x)
@@ -109,6 +109,10 @@ class World(object):
         return 1000
 
     def run_dijkstra(self):
+        """ Calculates the best path that Sparki should take to get to the end goal.
+
+        @rtype: 2D list [[]]
+        """
 
         dist = [[0] * self.size.x for _ in range(self.size.y)]
         prev = [[-1] * self.size.x for _ in range(self.size.y)]
@@ -146,6 +150,10 @@ class World(object):
         return prev
 
     def reconstruct_path(self, prev):
+        """
+
+        @type prev: 2D list
+        """
         current = self.goal_position
         final_path = []
 
