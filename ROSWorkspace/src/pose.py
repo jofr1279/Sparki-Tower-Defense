@@ -12,6 +12,15 @@ class Vector2(object):
     def __repr__(self):
         return '({}, {})'.format(self.x, self.y)
 
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __sub__(self, other):
+        return Vector2(
+            self.x - other.x,
+            self.y - other.y,
+        )
+
 
 class Direction(Enum):
     """ Simple wrapper for cardinal directions.
