@@ -211,30 +211,32 @@ class World(object):
         #        - self.targets
         #        - self.goal_position.x
         #        - self.goal_position.y
+        
 
         x_min = 999999
         y_min = 999999
         return_target = None
-        '''
+        # self.sparki.laser_range,servo_range
+        # Set range
+        # reference for later: https://gamedev.stackexchange.com/questions/112676/list-cells-in-a-2d-grid-that-belong-in-a-sector-portion-of-a-circle
+
         for i in range(self.size.y):
             for j in range(self.size.x):
                 if self.targets[i][j]:
                     # TODO Use direction to check that it is in the path
-                    if i == self.goal.position.y or j == self.goal.position.x:
-                        return self.targets[i][j]
+                    if i == self.goal_position.y or j == self.goal_position.x:
+                        return Vector2(i,j)
                     # Find closest target
                     x_diff = abs(self.sparki.position.x - j)
                     y_diff = abs(self.sparki.position.y - i)
                     if y_diff < y_min and x_diff < x_min:
                         x_min = x_diff
                         y_min = y_diff
-                        return_target = self.targets[i][j]
+                        return_target = Vector2(i,j)
 
-        '''
+       
 
         return return_target
-
-        return None
 
     def best_target_angle(self):
         """ Calculates the angle (in degrees) Sparki's servo should face so that is faces the best target. If there are
