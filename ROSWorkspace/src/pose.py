@@ -1,6 +1,3 @@
-from enum import Enum
-
-
 class Vector2(object):
     """ Simple wrapper for x, y coordinate pairs.
     """
@@ -28,14 +25,12 @@ class Vector2(object):
         )
 
 
-class Direction(Enum):
+class Direction(object):
     """ Simple wrapper for cardinal directions.
     """
 
-    NORTH = 0
-    EAST = 1
-    SOUTH = 2
-    WEST = 3
+    def __init__(self, num):
+        self.num = num
 
     @staticmethod
     def from_num(num):
@@ -44,7 +39,7 @@ class Direction(Enum):
         @type num: int
         """
 
-        return [Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST][num]
+        return [NORTH, EAST, SOUTH, WEST][num]
 
     @staticmethod
     def to_motor(direction):
@@ -54,8 +49,14 @@ class Direction(Enum):
         """
 
         return {
-            Direction.NORTH: (1, 1),
-            Direction.EAST: (1, -1),
-            Direction.SOUTH: (-1, -1),
-            Direction.WEST: (-1, 1)
+            NORTH: (1, 1),
+            EAST: (1, -1),
+            SOUTH: (-1, -1),
+            WEST: (-1, 1)
         }[direction]
+
+
+NORTH = Direction(0)
+EAST = Direction(1)
+SOUTH = Direction(2)
+WEST = Direction(3)

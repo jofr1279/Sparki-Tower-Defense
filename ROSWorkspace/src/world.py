@@ -3,7 +3,8 @@ import json
 import rospy
 from std_msgs.msg import String
 
-from sparki import Vector2, Direction, Sparki
+from pose import NORTH, EAST, SOUTH, WEST, Vector2, Direction
+from sparki import Sparki
 
 
 class World(object):
@@ -55,6 +56,7 @@ class World(object):
 
         @type string: String
         """
+
         data = json.loads(string.data)
         self.add_object(Vector2(data['x'], data['y']), data['target'])
 
@@ -63,6 +65,7 @@ class World(object):
 
         @type string: String
         """
+
         data = json.loads(string.data)
         self.remove_object(Vector2(data['x'], data['y']))
 
@@ -80,6 +83,7 @@ class World(object):
 
         @type position: Vector2
         """
+
         self.targets[position.x][position.y] = False
         self.obstacles[position.x][position.y] = False
 
@@ -116,7 +120,7 @@ class World(object):
 
         dist = [[0] * self.size.x for _ in range(self.size.y)]
         prev = [[-1] * self.size.x for _ in range(self.size.y)]
-        Q_cost = []
+        q_cost = []
 
         for x in range(self.size.x):
             for y in range(self.size.y):
@@ -124,16 +128,16 @@ class World(object):
                     dist[x][y] = 999999
 
                 coord = Vector2(x, y)
-                Q_cost.append([coord, dist[x][y]])
+                q_cost.append([coord, dist[x][y]])
 
-        while Q_cost:
-            element = min(Q_cost, key=lambda x: x[1])
-            Q_cost.remove(element)
+        while q_cost:
+            element = min(q_cost, key=lambda x: x[1])
+            q_cost.remove(element)
             u = element[0]
 
             for i in range(len(self.valid_direction_x)):
                 next_direction = Vector2(u.x + self.valid_direction_x[i], u.y + self.valid_direction_y[i])
-                if (not self.in_bounds(next_direction)) or (next_direction not in [x[0] for x in Q_cost]):
+                if (not self.in_bounds(next_direction)) or (next_direction not in [x[0] for x in q_cost]):
                     continue
 
                 alt = dist[u.x][u.y] + self.get_travel_cost(u, next_direction)
@@ -142,9 +146,9 @@ class World(object):
                     dist[next_direction.x][next_direction.y] = alt
                     prev[next_direction.x][next_direction.y] = u
 
-                    for index, element in enumerate(Q_cost):
+                    for index, element in enumerate(q_cost):
                         if element[0] == next_direction:
-                            Q_cost[index] = (element[0], alt)
+                            q_cost[index] = (element[0], alt)
                             break
 
         return prev
@@ -154,6 +158,7 @@ class World(object):
 
         @type prev: 2D list
         """
+
         current = self.goal_position
         final_path = []
 
@@ -175,24 +180,27 @@ class World(object):
         final_path = self.reconstruct_path(prev)
         diff = final_path[-2] - self.sparki.position
 
-        isObstacle = []
+        is_obstacle = []
         for i in range(len(self.valid_direction_x)):
 
-            next_direction = Vector2(self.sparki.position.x + self.valid_direction_x[i], self.sparki.position.y + self.valid_direction_y[i])
+            next_direction = Vector2(
+                self.sparki.position.x + self.valid_direction_x[i],
+                self.sparki.position.y + self.valid_direction_y[i]
+            )
             if self.in_bounds(next_direction):
-                isObstacle.append(self.obstacles[next_direction.x][next_direction.y])
+                is_obstacle.append(self.obstacles[next_direction.x][next_direction.y])
 
-        if all(isObstacle): 
+        if all(is_obstacle):
             return None
 
         if diff.x == -1:
-            return Direction.NORTH
+            return NORTH
         if diff.y == 1:
-            return Direction.EAST
+            return EAST
         if diff.x == 1:
-            return Direction.SOUTH
+            return SOUTH
         if diff.y == -1:
-            return Direction.WEST
+            return WEST
 
     def best_target(self):
         """ Calculates the best target Sparki should shoot at. If there is a target in the path towards the goal, it
@@ -218,7 +226,8 @@ class World(object):
         return_target = None
         # self.sparki.laser_range,servo_range
         # Set range
-        # reference for later: https://gamedev.stackexchange.com/questions/112676/list-cells-in-a-2d-grid-that-belong-in-a-sector-portion-of-a-circle
+        # reference for later:
+        #   https://gamedev.stackexchange.com/questions/112676/list-cells-in-a-2d-grid-that-belong-in-a-sector-portion-of-a-circle
 
         for i in range(self.size.y):
             for j in range(self.size.x):
@@ -233,8 +242,6 @@ class World(object):
                         x_min = x_diff
                         y_min = y_diff
                         return_target = Vector2(i,j)
-
-       
 
         return return_target
 

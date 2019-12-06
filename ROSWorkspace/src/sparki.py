@@ -1,7 +1,6 @@
 import rospy
 
-from config import SPARKI_SERVO_RANGE
-from pose import Vector2, Direction
+from pose import Vector2, Direction, NORTH
 from helper import pose_to_vector, pose_to_direction, to_float_array
 
 from geometry_msgs.msg import Pose2D
@@ -26,7 +25,12 @@ class Sparki(object):
         self.servo_range = servo_range
 
         self.position = Vector2(0, 0)
-        self.direction = Direction.NORTH
+        self.direction = NORTH
+
+        self.actual_position = Vector2(0, 0)
+        """ The Sparki's real-world position. """
+        self.actual_direction = 0
+        """ The Sparki's real-world direction (in degrees). """
 
         self._init_topics()
 
@@ -71,6 +75,6 @@ class Sparki(object):
         @param angle: The angle (in degrees) the servo should look at.
         """
 
-        assert -SPARKI_SERVO_RANGE < angle < SPARKI_SERVO_RANGE
+        assert -self.servo_range < angle < self.servo_range
 
         self.servo_publisher(angle)

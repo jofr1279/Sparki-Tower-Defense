@@ -1,6 +1,6 @@
 import unittest
 
-from ..src.pose import Vector2, Direction
+from ..src.pose import Vector2, EAST, SOUTH, WEST
 from ..src.sparki import Sparki
 from ..src.world import World
 
@@ -25,27 +25,27 @@ class TestWorld(unittest.TestCase):
 
     def test_best_direction(self):
         self.sparki.position = Vector2(4, 0)
-        self.assertEqual(self.world.best_direction(), Direction.EAST)
+        self.assertEqual(self.world.best_direction(), EAST)
 
         self.sparki.position = Vector2(0, 4)
-        self.assertEqual(self.world.best_direction(), Direction.SOUTH)
+        self.assertEqual(self.world.best_direction(), SOUTH)
 
         self.world.add_object(Vector2(1, 1), False)
         self.world.add_object(Vector2(0, 1), False)
         self.sparki.position = Vector2(0, 0)
-        self.assertEqual(self.world.best_direction(), Direction.SOUTH)
+        self.assertEqual(self.world.best_direction(), SOUTH)
 
         self.world.add_object(Vector2(1, 0), False)
         self.assertIsNone(self.world.best_direction())
 
         self.world.remove_object(Vector2(0, 1))
-        self.assertEqual(self.world.best_direction(), Direction.EAST)
+        self.assertEqual(self.world.best_direction(), EAST)
 
     def test_best_target(self):
         self.assertIsNone(self.world.best_target())
 
         # Sparki facing east with an obstacle to the east
-        self.sparki.direction = Direction.EAST
+        self.sparki.direction = EAST
         self.world.add_object(Vector2(0, 1), False)
         self.assertIsNone(self.world.best_target())
         self.world.remove_object(Vector2(0, 1))
@@ -55,11 +55,11 @@ class TestWorld(unittest.TestCase):
         self.assertEqual(self.world.best_target(), Vector2(0, 1))
 
         # Sparki facing west with a target to the east
-        self.sparki.direction = Direction.WEST
+        self.sparki.direction = WEST
         self.assertIsNone(self.world.best_target())
 
         # Sparki facing south with a target to the east with large servo range
-        self.sparki.direction = Direction.SOUTH
+        self.sparki.direction = SOUTH
         self.sparki.servo_range = 100
         self.assertEqual(self.world.best_target(), Vector2(0, 1))
 
@@ -67,7 +67,7 @@ class TestWorld(unittest.TestCase):
         self.assertIsNone(self.world.best_target_angle())
 
         # Sparki facing east with an obstacle to the east
-        self.sparki.direction = Direction.EAST
+        self.sparki.direction = EAST
         self.world.add_object(Vector2(0, 1), False)
         self.assertIsNone(self.world.best_target_angle())
         self.world.remove_object(Vector2(0, 1))
@@ -77,11 +77,11 @@ class TestWorld(unittest.TestCase):
         self.assertEqual(self.world.best_target_angle(), 0)
 
         # Sparki facing west with a target to the east
-        self.sparki.direction = Direction.WEST
+        self.sparki.direction = WEST
         self.assertIsNone(self.world.best_target_angle())
 
         # Sparki facing south with a target to the east with large servo range
-        self.sparki.direction = Direction.SOUTH
+        self.sparki.direction = SOUTH
         self.sparki.servo_range = 100
         self.assertEqual(self.world.best_target_angle(), -90)
 
