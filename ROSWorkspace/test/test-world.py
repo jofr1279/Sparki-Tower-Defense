@@ -36,7 +36,7 @@ class TestWorld(unittest.TestCase):
         self.assertEqual(self.world.best_direction(), Direction.SOUTH)
 
         self.world.add_object(Vector2(1, 0), False)
-        # self.assertIsNone(self.world.best_direction())
+        self.assertIsNone(self.world.best_direction())
 
         self.world.remove_object(Vector2(0, 1))
         self.assertEqual(self.world.best_direction(), Direction.EAST)

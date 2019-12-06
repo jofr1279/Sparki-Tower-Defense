@@ -174,7 +174,6 @@ class World(object):
 
         final_path = self.reconstruct_path(prev)
         diff = final_path[-2] - self.sparki.position
-        print(self.sparki.position) 
 
         isObstacle = []
         for i in range(len(self.valid_direction_x)):
