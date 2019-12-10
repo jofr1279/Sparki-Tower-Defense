@@ -130,6 +130,7 @@ def main(com_port):
     pub_sparki_odom = rospy.Publisher('/sparki/odometry', Pose2D, queue_size=10)
     pub_sparki_state = rospy.Publisher('/sparki/state', String, queue_size=10)
 
+    sub_sparki_turn = rospy.Subscriber('/sparki/turn_command', Float32, send_turn_command)
     sub_sparki_motors = rospy.Subscriber('/sparki/motor_command', Float32MultiArray, send_motor_command)
     sub_sparki_ping = rospy.Subscriber('/sparki/ping_command', Empty, send_ping)
     sub_sparki_odom = rospy.Subscriber('/sparki/set_odometry', Pose2D, set_odometry)
@@ -160,6 +161,16 @@ def set_servo(data):
     global sparki_servo_theta
     servo(-data.data)  # Sparki's rotation axis is the reverse of ours, so negate
     sparki_servo_theta = math.radians(data.data)
+
+
+# Custom command to make wheels turn!
+def send_turn_command(data):
+    if isinstance(data, Float32) is False:
+        print('Invalid turn command received')
+        print(str(data))
+        return
+
+    turn(data.data)
 
 
 def send_motor_command(data):
@@ -240,6 +251,11 @@ def printDebug(message, priority=logging.WARN):
         rospy.logfatal(message)
     else:
         print("[{}] --- {}".format(time.ctime(), message), file=sys.stderr)
+
+
+def turn(turn_float):
+    printDebug('Turn Request Received', DEBUG_INFO)
+    sendSerial(COMMAND_CODES['TURN_BY'], [turn_float])
 
 
 def motors(left_speed, right_speed):
