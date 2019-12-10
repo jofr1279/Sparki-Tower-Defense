@@ -633,7 +633,7 @@ def waitForSync():
 
 
 if __name__ == "__main__":
-    if (len(sys.argv) < 2):
+    if len(sys.argv) < 2:
         print("Sparki-ros must be run with a Sparki COM port specified")
         exit()
     main(sys.argv[1])
