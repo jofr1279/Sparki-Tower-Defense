@@ -123,8 +123,8 @@ class World(object):
         prev = [[-1] * self.size.x for _ in range(self.size.y)]
         q_cost = []
 
-        for x in range(self.size.x):
-            for y in range(self.size.y):
+        for y in range(self.size.y):
+            for x in range(self.size.x):
                 if not (self.sparki.position.x == x and self.sparki.position.y == y):
                     dist[x][y] = 999999
 
