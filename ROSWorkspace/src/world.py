@@ -203,6 +203,22 @@ class World(object):
         if diff.y == -1:
             return WEST
 
+    def in_range(self, coordinate):
+        """
+
+        @type coordinate: Vector2
+        @rtype: bool
+        """
+
+        if self.sparki.direction == NORTH:
+            return coordinate.x <= 0 and coordinate.y >= -self.sparki.laser_range and coordinate.y <= self.sparki.laser_range
+        if self.sparki.direction == SOUTH:
+            return coordinate.x >= 0 and coordinate.y >= -self.sparki.laser_range and coordinate.y <= self.sparki.laser_range
+        if self.sparki.direction == WEST:
+            return coordinate.x <= self.sparki.laser_range and coordinate.x >= -self.sparki.laser_range and coordinate.y <= 0
+        if self.sparki.direction == EAST:
+            return coordinate.x <= self.sparki.laser_range and coordinate.x >= -self.sparki.laser_range and coordinate.y >= 0
+        
     def best_target(self):
         """ Calculates the best target Sparki should shoot at. If there is a target in the path towards the goal, it
             should return that. If there is no target in the path, it should return the closest target. If there are no
@@ -244,6 +260,7 @@ class World(object):
                     rel_y = j - y_offset
                     print rel_x,rel_y
                     if (pow(rel_x,2) + pow(rel_y,2)) < pow(radius,2):
+                        '''
                         # Check within servo range, x is col and y is row
                         left_x = radius*math.cos(math.radians((self.sparki.servo_range)+angle_offset))
                         left_y = radius*math.sin(math.radians((self.sparki.servo_range)+angle_offset))
@@ -251,7 +268,9 @@ class World(object):
                         right_y = radius*math.sin(math.radians(angle_offset - (self.sparki.servo_range)))
                         print left_x,left_y,right_x,right_y
                         if (left_x < rel_x and left_y > rel_y and right_x > rel_x and right_y > rel_y):
-                            # TODO Use direction to check that it is in the path to goal
+                        '''
+                        if self.in_range(Vector2(rel_x,rel_y)):
+                            # TODO Use direction to check that it is in the path to goal for optimal shooting
                             '''
                             if i == self.goal_position.y or j == self.goal_position.x:
                                 return Vector2(i,j)
@@ -277,5 +296,14 @@ class World(object):
             return None
 
         # TODO (Tiffany and Elizabeth): Implement this function.
+        if self.sparki.direction == NORTH:
+            best_target.x
+        if self.sparki.direction == SOUTH:
+            0
+        if self.sparki.direction == WEST:
+            0
+        if self.sparki.direction == EAST:
+            0
+        
 
         return 0
