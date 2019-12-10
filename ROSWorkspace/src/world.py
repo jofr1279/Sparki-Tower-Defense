@@ -1,4 +1,5 @@
 import json
+import math
 
 import rospy
 from std_msgs.msg import String
@@ -220,42 +221,48 @@ class World(object):
         #        - self.goal_position.x
         #        - self.goal_position.y
         
-
-        x_min = 999999
-        y_min = 999999
+        min_dist = 999999
+        # Store variables for readibility
+        x_offset = self.sparki.position.x
+        y_offset = self.sparki.position.y
+        radius = self.sparki.laser_range
+        
+        # Set angle offset
+        if self.sparki.direction == NORTH: angle_offset = 90 
+        if self.sparki.direction == WEST: angle_offset = 180 
+        if self.sparki.direction == SOUTH: angle_offset = 270
+        if self.sparki.direction == EAST: angle_offset = 360
         return_target = None
         # self.sparki.laser_range,servo_range
-        # Set range
-        # reference for later:
-        #   https://gamedev.stackexchange.com/questions/112676/list-cells-in-a-2d-grid-that-belong-in-a-sector-portion-of-a-circle
+        
 
-        for i in range(self.size.y):
-            for j in range(self.size.x):
+        for i in range(self.size.x):
+            for j in range(self.size.y):
                 if self.targets[i][j]:
                     # Check within laser range
-                    if (pow(j - self.sparki.position.x,2) + pow(i - self.sparki.position.y,2)) < pow(self.sparki.laser_range,2):
-                        # Check within servo range
-                        '''
-                        normalLeftX = -sin(angle1)
-                        normalLeftY = cos(angle1)
-                        normalRightX = sin(angle2)
-                        normalRightY = -cos(angle2)
-                        pointRayX = point.x - cameraPosition.x;
-                        pointRayY = point.y - cameraPosition.y;
-                    if (pointRayX * normalLeftX + pointRayY * normalLeftY > 0 && pointRayX * normalRightX + pointRayY * normalRightY > 0)
-                    '''
-                        # TODO Use direction to check that it is in the path to goal
-                        #if i == self.goal_position.y or j == self.goal_position.x:
-                            #return Vector2(i,j)
-                        # Find closest target
-                        x_diff = abs(self.sparki.position.x - j)
-                        y_diff = abs(self.sparki.position.y - i)
-                        if y_diff < y_min and x_diff < x_min:
-                            x_min = x_diff
-                            y_min = y_diff
-                            return_target = Vector2(i,j)
-
+                    rel_x = i - x_offset
+                    rel_y = j - y_offset
+                    print rel_x,rel_y
+                    if (pow(rel_x,2) + pow(rel_y,2)) < pow(radius,2):
+                        # Check within servo range, x is col and y is row
+                        left_x = radius*math.cos(math.radians((self.sparki.servo_range)+angle_offset))
+                        left_y = radius*math.sin(math.radians((self.sparki.servo_range)+angle_offset))
+                        right_x = radius*math.cos(math.radians(angle_offset - (self.sparki.servo_range)))
+                        right_y = radius*math.sin(math.radians(angle_offset - (self.sparki.servo_range)))
+                        print left_x,left_y,right_x,right_y
+                        if (left_x < rel_x and left_y > rel_y and right_x > rel_x and right_y > rel_y):
+                            # TODO Use direction to check that it is in the path to goal
+                            '''
+                            if i == self.goal_position.y or j == self.goal_position.x:
+                                return Vector2(i,j)
+                            '''
+                            # Find closest target
+                            if (pow(rel_x,2) + pow(rel_y,2)) < pow(min_dist,2):
+                                min_dist = pow(rel_x,2) + pow(rel_y,2)
+                                return_target = Vector2(i,j)
+                            
         return return_target
+
 
     def best_target_angle(self):
         """ Calculates the angle (in degrees) Sparki's servo should face so that is faces the best target. If there are
