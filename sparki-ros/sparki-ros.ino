@@ -70,7 +70,6 @@ const int LIGHT_SENS_LEFT = 0;
 
 
 /* ***** SERIAL PORT FOR BLUETOOTH ***** */
-#define USE_BLUETOOTH
 #ifdef USE_BLUETOOTH
 #define serial Serial1
 #else
@@ -591,7 +590,7 @@ void loop() {
       sparki.print("Bad input");
       sparki.updateLCD();
       stop();
-      // sparki.beep();
+      sparki.beep();
       serial.print(TERMINATOR); 
       break;
     } // end switch ((char)inByte)
