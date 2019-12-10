@@ -232,16 +232,28 @@ class World(object):
         for i in range(self.size.y):
             for j in range(self.size.x):
                 if self.targets[i][j]:
-                    # TODO Use direction to check that it is in the path
-                    if i == self.goal_position.y or j == self.goal_position.x:
-                        return Vector2(i,j)
-                    # Find closest target
-                    x_diff = abs(self.sparki.position.x - j)
-                    y_diff = abs(self.sparki.position.y - i)
-                    if y_diff < y_min and x_diff < x_min:
-                        x_min = x_diff
-                        y_min = y_diff
-                        return_target = Vector2(i,j)
+                    # Check within laser range
+                    if (pow(j - self.sparki.position.x,2) + pow(i - self.sparki.position.y,2)) < pow(self.sparki.laser_range,2):
+                        # Check within servo range
+                        '''
+                        normalLeftX = -sin(angle1)
+                        normalLeftY = cos(angle1)
+                        normalRightX = sin(angle2)
+                        normalRightY = -cos(angle2)
+                        pointRayX = point.x - cameraPosition.x;
+                        pointRayY = point.y - cameraPosition.y;
+                    if (pointRayX * normalLeftX + pointRayY * normalLeftY > 0 && pointRayX * normalRightX + pointRayY * normalRightY > 0)
+                    '''
+                        # TODO Use direction to check that it is in the path to goal
+                        #if i == self.goal_position.y or j == self.goal_position.x:
+                            #return Vector2(i,j)
+                        # Find closest target
+                        x_diff = abs(self.sparki.position.x - j)
+                        y_diff = abs(self.sparki.position.y - i)
+                        if y_diff < y_min and x_diff < x_min:
+                            x_min = x_diff
+                            y_min = y_diff
+                            return_target = Vector2(i,j)
 
         return return_target
 
