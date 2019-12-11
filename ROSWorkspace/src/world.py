@@ -258,7 +258,6 @@ class World(object):
                     # Check within laser range
                     rel_x = i - x_offset
                     rel_y = j - y_offset
-                    print rel_x,rel_y
                     if (pow(rel_x,2) + pow(rel_y,2)) < pow(radius,2):
                         '''
                         # Check within servo range, x is col and y is row
@@ -295,11 +294,24 @@ class World(object):
         if best_target is None:
             return None
 
-        # TODO (Tiffany and Elizabeth): Implement this function.
+        laser_range = self.sparki.laser_range
+        rel_x = best_target.x - self.sparki.position.x
+        rel_y = best_target.y - self.sparki.position.y
+        # return a number between -90 (left) to 90 (right)
         if self.sparki.direction == NORTH:
-            best_target.x
-        if self.sparki.direction == SOUTH:
+            # Center vector of (-laser_range,0)
+            #return (best_target.x * -laser_range)/(math.sqrt(pow(best_target.x,2)+pow(best_target.y,2))*laser_range)
             0
+        if self.sparki.direction == SOUTH:
+            # Center vector of (laser_range,0)
+            #return (best_target.x * laser_range)/(math.sqrt(pow(best_target.x,2)+pow(best_target.y,2))*laser_range)
+            if (rel_y > 0): 
+                # Turn left
+                angle = -math.degrees(math.acos((best_target.x * laser_range)/(math.sqrt(pow(best_target.x,2)+pow(best_target.y,2))*laser_range)))
+            else:
+                # Turn right
+                angle = math.degrees(math.acos((best_target.x * laser_range)/(math.sqrt(pow(best_target.x,2)+pow(best_target.y,2))*laser_range)))
+            return angle
         if self.sparki.direction == WEST:
             0
         if self.sparki.direction == EAST:
