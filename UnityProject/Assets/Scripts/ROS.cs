@@ -26,4 +26,31 @@ public class ROS {
     static void UpdateServo(Int16 angle) {
         Debug.Log($"Servo update received! ({angle.data})");
     }
+
+    public void AddObstacle(Vector2 position, bool isTarget) {
+        var data = $"{{" +
+                   $"    \"position\": {{" +
+                   $"        \"x:\" {position.x}," +
+                   $"        \"y:\" {position.y}" +
+                   $"    }}," +
+                   $"    \"is_target\": {isTarget}" +
+                   $"}}";
+        
+        Debug.Log(data);
+        
+        socket.Publish("/sparki/add_obstacle", new String(data));
+    }
+    
+    public void RemoveObstacle(Vector2 position) {
+        var data = $"{{" +
+                   $"    \"position\": {{" +
+                   $"        \"x:\" {position.x}," +
+                   $"        \"y:\" {position.y}" +
+                   $"    }}" +
+                   $"}}";
+        
+        Debug.Log(data);
+        
+        socket.Publish("/sparki/add_obstacle", new String(data));
+    } 
 }

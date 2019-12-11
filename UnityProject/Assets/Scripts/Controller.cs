@@ -50,10 +50,10 @@ public class Controller : MonoBehaviour {
             if (hit.transform.CompareTag("Raycast Blanket")) {
                 var local = scaler.transform.InverseTransformPoint(hit.point);
                 var gridPoint = new Vector3((float) Math.Round(local.x), 0, (float) Math.Round(local.z));
-                Debug.Log($"{hit.point} -> {local} -> {gridPoint}");
                 var turret = Instantiate(tower, Vector3.zero, scaler.rotation, scaler);
                 turret.transform.localPosition = gridPoint;
                 
+                ros.AddObstacle(gridPoint, true);
             }
         }
     }
