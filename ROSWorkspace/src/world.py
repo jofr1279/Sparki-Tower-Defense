@@ -302,7 +302,7 @@ class World(object):
         angle = 0
 
         if self.sparki.direction == NORTH:
-            print "NORTH"
+            if rel_y == 0: return 0
             # Center vector of (-laser_range,0)
             if (rel_y < 0): 
                 # Turn left
@@ -311,7 +311,7 @@ class World(object):
                 # Turn right
                 angle = math.degrees(math.acos((best_target.x * -l_r)/(math.sqrt(pow(best_target.x,2)+pow(best_target.y,2))*l_r)))
         if self.sparki.direction == SOUTH:
-            print "SOUTH"
+            if rel_y == 0: return 0
             # Center vector of (laser_range,0)
             if (rel_y > 0): 
                 # Turn left
@@ -320,7 +320,7 @@ class World(object):
                 # Turn right
                 angle = math.degrees(math.acos((best_target.x * l_r)/(math.sqrt(pow(best_target.x,2)+pow(best_target.y,2))*l_r)))
         if self.sparki.direction == WEST:
-            print "WEST"
+            if rel_x == 0: return 0
 		    # Center vector of (0,-laser_range)
             if (rel_x > 0): 
                 # Turn left
@@ -330,7 +330,7 @@ class World(object):
                 angle = math.degrees(math.acos((best_target.y * -l_r)/(math.sqrt(pow(best_target.x,2)+pow(best_target.y,2))*l_r)))
             angle -= 270
         if self.sparki.direction == EAST:
-            print "EAST"
+            if rel_x == 0: return 0
             # Center vector of (0,laser_range)
             if (rel_x < 0): 
                 # Turn left
@@ -340,5 +340,4 @@ class World(object):
                 angle = math.degrees(math.acos((best_target.y * l_r)/(math.sqrt(pow(best_target.x,2)+pow(best_target.y,2))*l_r)))
             angle += 90
 
-        print angle
         return angle
