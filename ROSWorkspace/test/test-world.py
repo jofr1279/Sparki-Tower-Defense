@@ -98,11 +98,25 @@ class TestWorld(unittest.TestCase):
 	# Sparki facing west with a target to the north
 	self.sparki.position = Vector2(1, 1)
         self.sparki.direction = WEST
-        self.assertEqual(self.world.best_target_angle(), -90)
+        self.assertEqual(self.world.best_target_angle(), 90)
 	
 	# Sparki facing east with a target to the north
         self.sparki.direction = EAST
-        self.assertEqual(self.world.best_target_angle(), 90)
+        self.assertEqual(self.world.best_target_angle(), -90)
+	
+	# Sparki facing north with a target to the northwest
+	self.sparki.position = Vector2(1, 2)
+        self.sparki.direction = NORTH
+        self.assertEqual(self.world.best_target_angle(), -45)
+
+	# Sparki facing north with a target to the northeast
+	self.sparki.position = Vector2(1, 0)
+        self.assertEqual(self.world.best_target_angle(), 45)
+
+	# Sparki facing south with a target to the southeast
+	self.world.add_object(Vector2(2, 1), True)
+	self.sparki.direction = SOUTH
+        self.assertEqual(self.world.best_target_angle(), -45)
 
 
 if __name__ == '__main__':
