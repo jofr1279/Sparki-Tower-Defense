@@ -103,6 +103,9 @@ SERVO_LEFT = -80
 SERVO_CENTER = 0
 SERVO_RIGHT = 80
 
+# ***** TIMING VARIABLES ***** #
+LAST_FINISH_TIME = None
+
 serial_port = None  # save the serial port on which we're connected
 serial_conn = None  # hold the pyserial object
 serial_is_connected = False  # set to true once connection is done
@@ -111,7 +114,8 @@ odometry_x, odometry_y, odometry_theta = 0., 0., 0.
 sparki_servo_theta = 0.
 
 motor_speed_left, motor_speed_right = 0., 0.  # Percentage of max speed, [-100, 100]
-SPARKI_SPEED = 0.0278  # 100% speed in m/s
+SPARKI_LINEAR_SPEED = 0.0278  # 100% speed in m/s
+SPARKI_ANGULAR_SPEED = 360.0 / 9.605  # angular velocity in degrees / second
 SPARKI_AXLE_DIAMETER = 0.085  # Distance between wheels, meters
 SPARKI_WHEEL_RADIUS = 0.03  # Radius of wheels, meters
 CYCLE_TIME = 0.05  # Minimum delay between cycles
@@ -133,7 +137,7 @@ def main(com_port):
     # CUSTOM
     sub_sparki_turn = rospy.Subscriber('/sparki/turn_command', Float32, send_turn_command)
     sub_sparki_forward = rospy.Subscriber('/sparki/forward_command', Float32, send_move_forward)
-    sub_sparki_backward = rospy.Subscriber('/sparki/backward_command', Float32, send_move_backward)
+
     sub_sparki_motors = rospy.Subscriber('/sparki/motor_command', Float32MultiArray, send_motor_command)
     sub_sparki_ping = rospy.Subscriber('/sparki/ping_command', Empty, send_ping)
     sub_sparki_odom = rospy.Subscriber('/sparki/set_odometry', Pose2D, set_odometry)
@@ -168,6 +172,7 @@ def set_servo(data):
 
 # Custom command to make wheels turn!
 def send_turn_command(data):
+    global LAST_FINISH_TIME
     if isinstance(data, Float32) is False:
         print('Invalid turn command received')
         print(str(data))
@@ -176,25 +181,25 @@ def send_turn_command(data):
     printDebug('Turn Request Received', DEBUG_INFO)
     sendSerial(COMMAND_CODES['TURN_BY'], [data.data])
 
+    # TODO: test if this timing works
+    LAST_FINISH_TIME = rospy.Time.now() + rospy.Duration.from_sec(data.data / SPARKI_ANGULAR_SPEED)
+
 
 def send_move_forward(data):
+    global LAST_FINISH_TIME
     if isinstance(data, Float32) is False:
         print('Invalid move forward command received')
         print(str(data))
         return
-
     printDebug('Move Forward Request Received', DEBUG_INFO)
-    sendSerial(COMMAND_CODES['FORWARD_CM'], [data.data])
 
+    dist_in_cm = data.data * 100.0
+    direction = 'FORWARD_CM' if dist_in_cm > 0 else 'BACKWARD_CM'
+    dist_in_cm = abs(dist_in_cm)
 
-def send_move_backward(data):
-    if isinstance(data, Float32) is False:
-        print('Invalid move backward command received')
-        print(str(data))
-        return
+    sendSerial(COMMAND_CODES[direction], [dist_in_cm])
 
-    printDebug('Move Backward Request Received', DEBUG_INFO)
-    sendSerial(COMMAND_CODES['BACKWARD_CM'], [data.data])
+    LAST_FINISH_TIME = rospy.Time.now() + rospy.Duration.from_sec(abs(data.data) / SPARKI_LINEAR_SPEED)
 
 
 def send_motor_command(data):
@@ -233,11 +238,11 @@ def update_and_publish_state(pub):
 
 
 def update_and_publish_odometry(pub, time_delta):
-    global SPARKI_SPEED, SPARKI_AXLE_DIAMETER
+    global SPARKI_LINEAR_SPEED, SPARKI_AXLE_DIAMETER
     global motor_speed_left, motor_speed_right
     global odometry_x, odometry_y, odometry_theta
-    left_wheel_dist = (motor_speed_left * time_delta * SPARKI_SPEED)
-    right_wheel_dist = (motor_speed_right * time_delta * SPARKI_SPEED)
+    left_wheel_dist = (motor_speed_left * time_delta * SPARKI_LINEAR_SPEED)
+    right_wheel_dist = (motor_speed_right * time_delta * SPARKI_LINEAR_SPEED)
 
     odometry_x += math.cos(odometry_theta) * (left_wheel_dist + right_wheel_dist) / 2.
     odometry_y += math.sin(odometry_theta) * (left_wheel_dist + right_wheel_dist) / 2.
@@ -616,6 +621,19 @@ def waitForSync():
     """
     global serial_conn
     global serial_is_connected
+    global LAST_FINISH_TIME
+
+    start_time = rospy.Time.now()
+
+    # Ensure we have waited long enough for the last blocking command to run
+    if LAST_FINISH_TIME is not None and start_time < LAST_FINISH_TIME:
+        dur = LAST_FINISH_TIME - start_time
+        printDebug("Waiting {:.2f}s for blocking command to finish".format(dur.to_sec()), DEBUG_INFO)
+
+        rospy.sleep(dur)
+        printDebug('Done waiting', DEBUG_INFO)
+
+    LAST_FINISH_TIME = None
 
     if not serial_is_connected:
         printDebug("Sparki is not connected - use init()", DEBUG_CRITICAL)
