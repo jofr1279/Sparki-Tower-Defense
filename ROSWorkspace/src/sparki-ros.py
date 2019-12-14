@@ -16,12 +16,11 @@ import serial
 import rospy
 import json
 from geometry_msgs.msg import Pose2D
-from std_msgs.msg import Int16, String, Float32MultiArray, Empty
+from std_msgs.msg import Int16, String, Float32, Float32MultiArray, Empty
 
 TERMINATOR = chr(23)  # this character is at the end of every message to / from Sparki
 SYNC = chr(22)  # this character is sent by Sparki after every command completes so we know it's ready for the next
 MAX_TRANSMISSION = 20  # maximum message length is 20 to conserve Sparki's limited RAM
-
 
 LCD_BLACK = 0  # set in Sparki.h
 LCD_WHITE = 1  # set in Sparki.h
@@ -33,7 +32,6 @@ DEBUG_ERROR = 2  # reports something contrary to the API
 DEBUG_CRITICAL = 1  # reports an error which interferes with proper or consistent operation
 DEBUG_ALWAYS = 0  # should always be reported
 
-
 CONN_TIMEOUT = 0.1  # in seconds
 
 # ***** COMMAND CHARACTER CODES ***** #
@@ -43,7 +41,7 @@ COMMAND_CODES = {
     'COMPASS': 'c',  # no arguments; returns float heading
     'GAMEPAD': 'e',  # no arguments; returns nothing
     'GET_ACCEL': 'f',  # no arguments; returns array of 3 floats with values of x, y, and z
-    #'GET_BATTERY': 'j',  # no arguments; returns float of voltage remaining
+    # 'GET_BATTERY': 'j',  # no arguments; returns float of voltage remaining
     'GET_LIGHT': 'k',  # no arguments; returns array of 3 ints with values of left, center & right light sensor
     'GET_LINE': 'm',
     # no arguments; returns array of 5 ints with values of left edge, left, center, right & right edge line sensor
@@ -105,62 +103,103 @@ SERVO_LEFT = -80
 SERVO_CENTER = 0
 SERVO_RIGHT = 80
 
+# ***** TIMING VARIABLES ***** #
+LAST_FINISH_TIME = None
 
 serial_port = None  # save the serial port on which we're connected
 serial_conn = None  # hold the pyserial object
 serial_is_connected = False  # set to true once connection is done
 
-
-odometry_x, odometry_y, odometry_theta = 0.,0.,0.
+odometry_x, odometry_y, odometry_theta = 0., 0., 0.
 sparki_servo_theta = 0.
 
-motor_speed_left, motor_speed_right = 0., 0. # Percentage of max speed, [-100, 100]
-SPARKI_SPEED = 0.0278 # 100% speed in m/s
-SPARKI_AXLE_DIAMETER = 0.085 # Distance between wheels, meters 
-SPARKI_WHEEL_RADIUS = 0.03 # Radius of wheels, meters
-CYCLE_TIME = 0.05 # Minimum delay between cycles
-IR_CYCLE_TIME = 0.05 # Minimum Delay polling IR sensors
+motor_speed_left, motor_speed_right = 0., 0.  # Percentage of max speed, [-100, 100]
+SPARKI_LINEAR_SPEED = 0.0278  # 100% speed in m/s
+SPARKI_ANGULAR_SPEED = 360.0 / 9.605  # angular velocity in degrees / second
+SPARKI_AXLE_DIAMETER = 0.085  # Distance between wheels, meters
+SPARKI_WHEEL_RADIUS = 0.03  # Radius of wheels, meters
+CYCLE_TIME = 0.05  # Minimum delay between cycles
+IR_CYCLE_TIME = 0.05  # Minimum Delay polling IR sensors
 LAST_IR_POLL = 0
-sparki_ir_sensors = [0,0,0,0,0]
+sparki_ir_sensors = [0, 0, 0, 0, 0]
 pub_sparki_odom, pub_sparki_state = None, None
 sparki_ping_requested = False
 
+
 def main(com_port):
-  global pub_sparki_odom, pub_sparki_state, serial_conn
-  rospy.init_node("sparki_driver_ros")
-  init(com_port)
+    global pub_sparki_odom, pub_sparki_state, serial_conn
+    rospy.init_node("sparki_driver_ros")
+    init(com_port)
 
-  pub_sparki_odom = rospy.Publisher('/sparki/odometry', Pose2D, queue_size=10)
-  pub_sparki_state = rospy.Publisher('/sparki/state', String, queue_size=10)
+    pub_sparki_odom = rospy.Publisher('/sparki/odometry', Pose2D, queue_size=10)
+    pub_sparki_state = rospy.Publisher('/sparki/state', String, queue_size=10)
 
-  sub_sparki_motors = rospy.Subscriber('/sparki/motor_command', Float32MultiArray, send_motor_command)
-  sub_sparki_ping = rospy.Subscriber('/sparki/ping_command', Empty, send_ping)
-  sub_sparki_odom = rospy.Subscriber('/sparki/set_odometry', Pose2D, set_odometry)
-  sub_sparki_servo = rospy.Subscriber('/sparki/set_servo', Int16, set_servo)
+    # CUSTOM
+    sub_sparki_turn = rospy.Subscriber('/sparki/turn_command', Float32, send_turn_command)
+    sub_sparki_forward = rospy.Subscriber('/sparki/forward_command', Float32, send_move_forward)
 
-  last_time = time.time()
-  while not rospy.is_shutdown():
-    try:
-        cycle_start = time.time()
-        # Update and Publish Odometry
-        update_and_publish_odometry(pub_sparki_odom, time.time() - last_time)
-        last_time = time.time()
-        # Update and Publish Sensors
-        update_and_publish_state(pub_sparki_state)
-        rospy.sleep(max(0,CYCLE_TIME-(time.time()-cycle_start)))
-    except serial.SerialException:
-        rospy.loginfo("Serial port reset for some reason! Reconnecting.")
-        init(com_port)
+    sub_sparki_motors = rospy.Subscriber('/sparki/motor_command', Float32MultiArray, send_motor_command)
+    sub_sparki_ping = rospy.Subscriber('/sparki/ping_command', Empty, send_ping)
+    sub_sparki_odom = rospy.Subscriber('/sparki/set_odometry', Pose2D, set_odometry)
+    sub_sparki_servo = rospy.Subscriber('/sparki/set_servo', Int16, set_servo)
+
+    last_time = time.time()
+    while not rospy.is_shutdown():
+        try:
+            cycle_start = time.time()
+            # Update and Publish Odometry
+            update_and_publish_odometry(pub_sparki_odom, time.time() - last_time)
+            last_time = time.time()
+            # Update and Publish Sensors
+            update_and_publish_state(pub_sparki_state)
+            rospy.sleep(max(0, CYCLE_TIME - (time.time() - cycle_start)))
+        except serial.SerialException:
+            rospy.loginfo("Serial port reset for some reason! Reconnecting.")
+            init(com_port)
+
 
 def set_odometry(data):
     global odometry_x, odometry_y, odometry_theta
 
     odometry_x, odometry_y, odometry_theta = data.x, data.y, data.theta
 
+
 def set_servo(data):
     global sparki_servo_theta
-    servo(-data.data) # Sparki's rotation axis is the reverse of ours, so negate
+    servo(-data.data)  # Sparki's rotation axis is the reverse of ours, so negate
     sparki_servo_theta = math.radians(data.data)
+
+
+# Custom command to make wheels turn!
+def send_turn_command(data):
+    global LAST_FINISH_TIME
+    if isinstance(data, Float32) is False:
+        print('Invalid turn command received')
+        print(str(data))
+        return
+
+    printDebug('Turn Request Received', DEBUG_INFO)
+    sendSerial(COMMAND_CODES['TURN_BY'], [data.data])
+
+    LAST_FINISH_TIME = rospy.Time.now() + rospy.Duration.from_sec(abs(data.data) / SPARKI_ANGULAR_SPEED)
+
+
+def send_move_forward(data):
+    global LAST_FINISH_TIME
+    if isinstance(data, Float32) is False:
+        print('Invalid move forward command received')
+        print(str(data))
+        return
+    printDebug('Move Forward Request Received', DEBUG_INFO)
+
+    dist_in_cm = data.data * 100.0
+    direction = 'FORWARD_CM' if dist_in_cm > 0 else 'BACKWARD_CM'
+    dist_in_cm = abs(dist_in_cm)
+
+    sendSerial(COMMAND_CODES[direction], [dist_in_cm])
+
+    LAST_FINISH_TIME = rospy.Time.now() + rospy.Duration.from_sec(abs(data.data) / SPARKI_LINEAR_SPEED)
+
 
 def send_motor_command(data):
     if len(data.data) != 2:
@@ -170,46 +209,49 @@ def send_motor_command(data):
     left_motor_speed = data.data[0]
     right_motor_speed = data.data[1]
 
-    motors(left_motor_speed,right_motor_speed)
+    motors(left_motor_speed, right_motor_speed)
+
 
 def send_ping(data):
     global sparki_ping_requested
     sparki_ping_requested = True
 
+
 def update_and_publish_state(pub):
-  global sparki_servo_theta, sparki_ir_sensors, LAST_IR_POLL, sparki_ping_requested
-  state = {}
-  state['servo'] = sparki_servo_theta
+    global sparki_servo_theta, sparki_ir_sensors, LAST_IR_POLL, sparki_ping_requested
+    state = {}
+    state['servo'] = sparki_servo_theta
 
-  if (time.time() - LAST_IR_POLL > IR_CYCLE_TIME):
-    sparki_ir_sensors = getLine()
-    LAST_IR_POLL = time.time()
+    if (time.time() - LAST_IR_POLL > IR_CYCLE_TIME):
+        sparki_ir_sensors = getLine()
+        LAST_IR_POLL = time.time()
 
-  state['light_sensors'] = sparki_ir_sensors
+    state['light_sensors'] = sparki_ir_sensors
 
-  if sparki_ping_requested is True:
-    sparki_ping_dist = ping()
-    state['ping'] = sparki_ping_dist
-    sparki_ping_requested = False
+    if sparki_ping_requested is True:
+        sparki_ping_dist = ping()
+        state['ping'] = sparki_ping_dist
+        sparki_ping_requested = False
 
-
-  pub.publish(json.dumps(state))
+    pub.publish(json.dumps(state))
 
 
 def update_and_publish_odometry(pub, time_delta):
-  global SPARKI_SPEED, SPARKI_AXLE_DIAMETER
-  global motor_speed_left, motor_speed_right
-  global odometry_x, odometry_y, odometry_theta
-  left_wheel_dist = (motor_speed_left * time_delta * SPARKI_SPEED)
-  right_wheel_dist = (motor_speed_right * time_delta * SPARKI_SPEED)
+    global SPARKI_LINEAR_SPEED, SPARKI_AXLE_DIAMETER
+    global motor_speed_left, motor_speed_right
+    global odometry_x, odometry_y, odometry_theta
+    left_wheel_dist = (motor_speed_left * time_delta * SPARKI_LINEAR_SPEED)
+    right_wheel_dist = (motor_speed_right * time_delta * SPARKI_LINEAR_SPEED)
 
-  odometry_x += math.cos(odometry_theta) * (left_wheel_dist+right_wheel_dist)/2. 
-  odometry_y += math.sin(odometry_theta) * (left_wheel_dist+right_wheel_dist)/2. 
-  odometry_theta += (right_wheel_dist - left_wheel_dist) / SPARKI_AXLE_DIAMETER
+    odometry_x += math.cos(odometry_theta) * (left_wheel_dist + right_wheel_dist) / 2.
+    odometry_y += math.sin(odometry_theta) * (left_wheel_dist + right_wheel_dist) / 2.
+    odometry_theta += (right_wheel_dist - left_wheel_dist) / SPARKI_AXLE_DIAMETER
 
-  pose = Pose2D()
-  pose.x, pose.y, pose.theta = odometry_x, odometry_y, odometry_theta
-  pub.publish(pose)
+    pose = Pose2D()
+    pose.x, pose.y, pose.theta = odometry_x, odometry_y, odometry_theta
+    pub.publish(pose)
+
+
 # -------------------------------------
 
 def printDebug(message, priority=logging.WARN):
@@ -267,7 +309,7 @@ def motors(left_speed, right_speed):
     # adjust speeds to Sparki's requirements
     left_speed = min(max(left_speed, -1.0), 1.0)
     right_speed = min(max(right_speed, -1.0), 1.0)
-    
+
     left_speed = int(left_speed * 100)  # sparki expects an int between 1 and 100
     right_speed = int(right_speed * 100)  # sparki expects an int between 1 and 100
     args = [left_speed, right_speed]
@@ -275,6 +317,7 @@ def motors(left_speed, right_speed):
     sendSerial(COMMAND_CODES["MOTORS"], args)
     motor_speed_left = left_speed / 100.
     motor_speed_right = right_speed / 100.
+
 
 def ping():
     """ Returns the reading from the ultrasonic sensor on the servo
@@ -288,6 +331,7 @@ def ping():
     result = getSerialInt()
     return result
 
+
 def servo(deg):
     """ Sets the servo angle [-80,80]
 
@@ -295,7 +339,7 @@ def servo(deg):
     """
     printDebug("Servo Request Received: %d" % deg, DEBUG_INFO)
 
-    sendSerial(COMMAND_CODES["SERVO"], [int(max(min(80,deg),-80))])
+    sendSerial(COMMAND_CODES["SERVO"], [int(max(min(80, deg), -80))])
 
 
 def getLine():
@@ -308,7 +352,6 @@ def getLine():
     lines = (getSerialInt(), getSerialInt(), getSerialInt(), getSerialInt(), getSerialInt())
 
     return lines
-
 
 
 def init(com_port, print_versions=True):
@@ -350,16 +393,17 @@ def init(com_port, print_versions=True):
     serial_is_connected = True  # have to do this prior to sendSerial, or sendSerial will never try to send
 
     sendSerial(COMMAND_CODES["INIT"])
-    init_message = getSerialString() 
+    init_message = getSerialString()
 
     if init_message:
         init_time = time.time()
 
-        printDebug("Sparki connection successful", DEBUG_ALWAYS)    
+        printDebug("Sparki connection successful", DEBUG_ALWAYS)
     else:
         printDebug("Sparki communication failed", DEBUG_ALWAYS)
         serial_is_connected = False
         init_time = -1
+
 
 def disconnectSerial():
     """ Disconnects from the Sparki robot
@@ -375,6 +419,7 @@ def disconnectSerial():
         serial_conn = None
         serial_port = None
         init_time = -1
+
 
 def getSerialBytes():
     """ Returns bytes from the serial port up to TERMINATOR
@@ -488,6 +533,7 @@ def getSerialString():
     printDebug("In getSerialString, returning " + result, DEBUG_DEBUG)
     return result
 
+
 def sendSerial(command, args=None):
     """ Sends the command with the args over a serial connection
         
@@ -510,7 +556,7 @@ def sendSerial(command, args=None):
         printDebug("In sendSerial, no command given", DEBUG_ALWAYS)
         raise RuntimeError("Attempt to send message to Sparki without command")
 
-    #command_queue.append((command, args))  # keep track of every command sent
+    # command_queue.append((command, args))  # keep track of every command sent
 
     try:
         waitForSync()  # be sure Sparki is available before sending
@@ -545,7 +591,10 @@ def sendSerial(command, args=None):
 
         if len(message) > MAX_TRANSMISSION:
             printDebug("In sendSerial, messages must be " + str(MAX_TRANSMISSION) + " characters or fewer", DEBUG_ERROR)
+
+            # FIXME: The "stop" function does not exist and I'm not entirely sure what it should do
             stop()  # done for safety -- in case robot is in motion
+
             raise RuntimeError("Messages sent to Sparki must be {} or fewer characters".format(str(MAX_TRANSMISSION)))
 
         printDebug("Sending bytes " + str(message) + " (" + str(value) + ")", DEBUG_DEBUG)
@@ -559,6 +608,7 @@ def sendSerial(command, args=None):
     serial_conn.flush()  # ensure the buffer is flushed
     time.sleep(0.01)
 
+
 def waitForSync():
     """ Waits for the SYNC character from Sparki
 
@@ -570,6 +620,19 @@ def waitForSync():
     """
     global serial_conn
     global serial_is_connected
+    global LAST_FINISH_TIME
+
+    start_time = rospy.Time.now()
+
+    # Ensure we have waited long enough for the last blocking command to run
+    if LAST_FINISH_TIME is not None and start_time < LAST_FINISH_TIME:
+        dur = LAST_FINISH_TIME - start_time
+        printDebug("Waiting {:.2f}s for blocking command to finish".format(dur.to_sec()), DEBUG_INFO)
+
+        rospy.sleep(dur)
+        printDebug('Done waiting', DEBUG_INFO)
+
+    LAST_FINISH_TIME = None
 
     if not serial_is_connected:
         printDebug("Sparki is not connected - use init()", DEBUG_CRITICAL)
@@ -596,7 +659,8 @@ def waitForSync():
                     DEBUG_INFO)
             else:
                 printDebug("In waitForSync, unable to sync with Sparki", DEBUG_ERROR)
-            raise serial.SerialTimeoutException("Unable to sync with Sparki -- may be temporary error due to power saving")
+            raise serial.SerialTimeoutException(
+                "Unable to sync with Sparki -- may be temporary error due to power saving")
 
         try:
             inByte = serial_conn.read()
@@ -608,7 +672,7 @@ def waitForSync():
 
 
 if __name__ == "__main__":
-  if (len(sys.argv) < 2):
-    print("Sparki-ros must be run with a Sparki COM port specified")
-    exit()
-  main(sys.argv[1])
+    if len(sys.argv) < 2:
+        print("Sparki-ros must be run with a Sparki COM port specified")
+        exit()
+    main(sys.argv[1])
