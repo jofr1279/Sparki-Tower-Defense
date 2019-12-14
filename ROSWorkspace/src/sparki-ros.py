@@ -181,8 +181,7 @@ def send_turn_command(data):
     printDebug('Turn Request Received', DEBUG_INFO)
     sendSerial(COMMAND_CODES['TURN_BY'], [data.data])
 
-    # TODO: test if this timing works
-    LAST_FINISH_TIME = rospy.Time.now() + rospy.Duration.from_sec(data.data / SPARKI_ANGULAR_SPEED)
+    LAST_FINISH_TIME = rospy.Time.now() + rospy.Duration.from_sec(abs(data.data) / SPARKI_ANGULAR_SPEED)
 
 
 def send_move_forward(data):
