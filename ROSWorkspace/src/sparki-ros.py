@@ -170,7 +170,8 @@ def send_turn_command(data):
         print(str(data))
         return
 
-    turn(data.data)
+    printDebug('Turn Request Received', DEBUG_INFO)
+    sendSerial(COMMAND_CODES['TURN_BY'], [data.data])
 
 
 def send_motor_command(data):
@@ -251,11 +252,6 @@ def printDebug(message, priority=logging.WARN):
         rospy.logfatal(message)
     else:
         print("[{}] --- {}".format(time.ctime(), message), file=sys.stderr)
-
-
-def turn(turn_float):
-    printDebug('Turn Request Received', DEBUG_INFO)
-    sendSerial(COMMAND_CODES['TURN_BY'], [turn_float])
 
 
 def motors(left_speed, right_speed):
