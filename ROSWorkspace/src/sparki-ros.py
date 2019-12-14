@@ -130,7 +130,10 @@ def main(com_port):
     pub_sparki_odom = rospy.Publisher('/sparki/odometry', Pose2D, queue_size=10)
     pub_sparki_state = rospy.Publisher('/sparki/state', String, queue_size=10)
 
+    # CUSTOM
     sub_sparki_turn = rospy.Subscriber('/sparki/turn_command', Float32, send_turn_command)
+    sub_sparki_forward = rospy.Subscriber('/sparki/forward_command', Float32, send_move_forward)
+    sub_sparki_backward = rospy.Subscriber('/sparki/backward_command', Float32, send_move_backward)
     sub_sparki_motors = rospy.Subscriber('/sparki/motor_command', Float32MultiArray, send_motor_command)
     sub_sparki_ping = rospy.Subscriber('/sparki/ping_command', Empty, send_ping)
     sub_sparki_odom = rospy.Subscriber('/sparki/set_odometry', Pose2D, set_odometry)
@@ -172,6 +175,26 @@ def send_turn_command(data):
 
     printDebug('Turn Request Received', DEBUG_INFO)
     sendSerial(COMMAND_CODES['TURN_BY'], [data.data])
+
+
+def send_move_forward(data):
+    if isinstance(data, Float32) is False:
+        print('Invalid turn command received')
+        print(str(data))
+        return
+
+    printDebug('Move Forward Request Received', DEBUG_INFO)
+    sendSerial(COMMAND_CODES['FORWARD_CM'], [data.data])
+
+
+def send_move_backward(data):
+    if isinstance(data, Float32) is False:
+        print('Invalid turn command received')
+        print(str(data))
+        return
+
+    printDebug('Move Backward Request Received', DEBUG_INFO)
+    sendSerial(COMMAND_CODES['BACKWARD_CM'], [data.data])
 
 
 def send_motor_command(data):
