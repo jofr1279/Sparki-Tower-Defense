@@ -590,7 +590,6 @@ void loop() {
       sparki.print("Bad input");
       sparki.updateLCD();
       stop();
-      sparki.beep();
       serial.print(TERMINATOR); 
       break;
     } // end switch ((char)inByte)
