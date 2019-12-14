@@ -179,7 +179,7 @@ def send_turn_command(data):
 
 def send_move_forward(data):
     if isinstance(data, Float32) is False:
-        print('Invalid turn command received')
+        print('Invalid move forward command received')
         print(str(data))
         return
 
@@ -189,7 +189,7 @@ def send_move_forward(data):
 
 def send_move_backward(data):
     if isinstance(data, Float32) is False:
-        print('Invalid turn command received')
+        print('Invalid move backward command received')
         print(str(data))
         return
 
