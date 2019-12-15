@@ -10,6 +10,8 @@ public class Controller : MonoBehaviour {
     public Transform scaler;
     public Text moneyText;
     public Sparki sparki;
+
+    public InputField addressInput;
     
     public int money;
     public int towerCost;
@@ -20,7 +22,10 @@ public class Controller : MonoBehaviour {
     private void Start() {
         UpdateMoneyText();
 
-        ros = new ROS(GetComponent<RosConnector>(), sparki);
+    }
+
+    public void Connect() {
+        ros = new ROS(addressInput.text, sparki);
     }
 
     void Update() {

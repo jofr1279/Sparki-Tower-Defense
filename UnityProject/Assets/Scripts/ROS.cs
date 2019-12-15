@@ -1,6 +1,6 @@
 ﻿using RosSharp.RosBridgeClient;
 using RosSharp.RosBridgeClient.MessageTypes.Std;
-
+using RosSharp.RosBridgeClient.Protocols;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
@@ -11,9 +11,9 @@ public class ROS {
     string addObstaclePublisher;
     string removeObstaclePublisher;
 
-    public ROS(RosConnector connector, Sparki _sparki) {
-        socket = connector.RosSocket;
-        sparki = _sparki;
+    public ROS(string address, Sparki sparki) {
+        socket = new RosSocket(new WebSocketNetProtocol(address));
+        ROS.sparki = sparki;
         
         InitTopics();
     }

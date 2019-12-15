@@ -56,11 +56,27 @@ public class Sparki : MonoBehaviour {
     }
 
     void Fire() {
+        var actualAngle = 0;
+        switch (direction) {
+            case 0:
+                actualAngle = angle + 0;
+                break;
+            case 1:
+                actualAngle = angle + 90;
+                break;
+            case 2:
+                actualAngle = angle + 180;
+                break;
+            case 3:
+                actualAngle = angle + -90;
+                break;
+        }
+
         var p1 = transform.position + transform.up / 4;
-        var p2 = Quaternion.AngleAxis(angle, transform.up) * transform.forward;
+        var p2 = Quaternion.AngleAxis(actualAngle, transform.up) * transform.forward;
 
         Debug.DrawRay(p1, p2, Color.magenta, 4);
-        fireParticles.transform.localRotation = Quaternion.AngleAxis(angle, Vector3.up);
+        fireParticles.transform.localRotation = Quaternion.AngleAxis(actualAngle, Vector3.up);
         fireParticles.Play();
         
         RaycastHit hit;
