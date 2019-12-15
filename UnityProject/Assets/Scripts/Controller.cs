@@ -1,4 +1,5 @@
 ﻿using System;
+using RosSharp.RosBridgeClient;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,16 +8,17 @@ public class Controller : MonoBehaviour {
     public GameObject tower;
     public Transform scaler;
     public Text moneyText;
-    public UIController uiController;
     
     public int money;
     public int towerCost;
 
-    private bool fingerDown;
-    private ROS ros;
+    bool fingerDown;
+    public ROS ros;
 
     private void Start() {
         UpdateMoneyText();
+
+        ros = new ROS(GetComponent<RosConnector>());
     }
 
     void Update() {
@@ -39,10 +41,6 @@ public class Controller : MonoBehaviour {
         }
     }
     
-    void Connect(string address) {
-        ros = new ROS(address);
-    }
-
     void BuildTurret(Vector2 position) {
         var ray = arCamera.ScreenPointToRay(Input.GetTouch(0).position);
         RaycastHit hit;
@@ -52,6 +50,8 @@ public class Controller : MonoBehaviour {
                 var gridPoint = new Vector3((float) Math.Round(local.x), 0, (float) Math.Round(local.z));
                 var turret = Instantiate(tower, Vector3.zero, scaler.rotation, scaler);
                 turret.transform.localPosition = gridPoint;
+                
+                Debug.Log(local);
                 
                 ros.AddObstacle(gridPoint, true);
             }

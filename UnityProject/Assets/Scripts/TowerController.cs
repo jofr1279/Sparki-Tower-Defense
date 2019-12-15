@@ -6,8 +6,10 @@ public class TowerController : MonoBehaviour {
 
     public ParticleSystem damageParticles;
     public ParticleSystem fireParticles;
+    public GameObject explosion;
 
     AudioSource audioSource;
+    Controller controller;
     
     public int range;
     public int maxHealth;
@@ -20,6 +22,7 @@ public class TowerController : MonoBehaviour {
 
     void Start() {
         audioSource = GetComponent<AudioSource>();
+        controller = GameObject.FindWithTag("GameController").GetComponent<Controller>();
         target = GameObject.FindWithTag("Sparki").transform;
         
         health = maxHealth;
@@ -68,6 +71,8 @@ public class TowerController : MonoBehaviour {
         }
 
         if (health <= 0) {
+            Instantiate(explosion, transform.position, Quaternion.identity);
+            controller.ros.RemoveObstacle(transform.localPosition);
             Destroy(gameObject);
         }
     }

@@ -8,12 +8,13 @@ public class Sparki : MonoBehaviour {
     
     public ParticleSystem fireParticles;
     public ParticleSystem damageParticles;
+    public GameObject explosion;
 
     int health;
     float cooldown;
     int particleThreshold;
 
-    public float damage;
+    public int damage;
     public int angle;
 
     void Start() {
@@ -33,8 +34,8 @@ public class Sparki : MonoBehaviour {
     }
 
     void Fire() {
-        var p1 = transform.position + (Vector3.up / 4);
-        var p2 = Quaternion.AngleAxis(angle, Vector3.up) * Vector3.forward;
+        var p1 = transform.position + transform.up / 4;
+        var p2 = Quaternion.AngleAxis(angle, transform.up) * transform.forward;
 
         Debug.DrawRay(p1, p2, Color.magenta, 4);
         fireParticles.transform.localRotation = Quaternion.AngleAxis(angle, Vector3.up);
@@ -43,7 +44,10 @@ public class Sparki : MonoBehaviour {
         RaycastHit hit;
         if (Physics.Raycast(p1, p2, out hit)) {
             Debug.Log($"Raycast hit! {hit.transform.name}");
-            hit.transform.SendMessage("Damage", damage);
+            if (hit.transform.CompareTag("Tower")) {
+                Debug.Log("Damaging...");
+                hit.transform.GetComponent<TowerController>().Damage(damage);
+            }
         }
     }
 
@@ -55,6 +59,7 @@ public class Sparki : MonoBehaviour {
         }
 
         if (health <= 0) {
+            Instantiate(explosion, transform.position, Quaternion.identity);
             Destroy(gameObject);
         }
     }

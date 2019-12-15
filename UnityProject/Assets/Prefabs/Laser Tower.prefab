@@ -9546,7 +9546,7 @@ GameObject:
   - component: {fileID: 7476505699324570206}
   m_Layer: 10
   m_Name: Laser Tower
-  m_TagString: Untagged
+  m_TagString: Tower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -9581,6 +9581,8 @@ MonoBehaviour:
   turret: {fileID: 3779501869434495170}
   damageParticles: {fileID: 613417591795630435}
   fireParticles: {fileID: 3953164809603606578}
+  explosion: {fileID: 9147274567689174461, guid: 15c0cf17646b7d14bbfb2e8709cb6e4a,
+    type: 3}
   range: 3
   maxHealth: 150
   maxCooldown: 1
