@@ -1,5 +1,6 @@
 ﻿using System;
 using RosSharp.RosBridgeClient;
+using RosSharp.RosBridgeClient.MessageTypes.Std;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,6 +9,7 @@ public class Controller : MonoBehaviour {
     public GameObject tower;
     public Transform scaler;
     public Text moneyText;
+    public Sparki sparki;
     
     public int money;
     public int towerCost;
@@ -18,7 +20,7 @@ public class Controller : MonoBehaviour {
     private void Start() {
         UpdateMoneyText();
 
-        ros = new ROS(GetComponent<RosConnector>());
+        ros = new ROS(GetComponent<RosConnector>(), sparki);
     }
 
     void Update() {
@@ -27,13 +29,11 @@ public class Controller : MonoBehaviour {
             fingerDown = true;
             
             if (money >= towerCost) {
-                Debug.Log("Building...");
                 BuildTurret(Input.touches[0].position);
                 money -= towerCost;
                 UpdateMoneyText();
             }
             else {
-                Debug.Log("Insufficient funds.");
             }
         }
         else {

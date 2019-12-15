@@ -1,5 +1,4 @@
 ﻿using RosSharp.RosBridgeClient;
-using RosSharp.RosBridgeClient.MessageTypes.Geometry;
 using RosSharp.RosBridgeClient.MessageTypes.Std;
 
 using UnityEngine;
@@ -7,30 +6,44 @@ using Vector3 = UnityEngine.Vector3;
 
 public class ROS { 
     RosSocket socket;
+    static Sparki sparki;
 
     string addObstaclePublisher;
     string removeObstaclePublisher;
 
-    public ROS(RosConnector connector) {
+    public ROS(RosConnector connector, Sparki _sparki) {
         socket = connector.RosSocket;
+        sparki = _sparki;
         
         InitTopics();
     }
 
     void InitTopics() {
-        socket.Subscribe<Pose2D>("/sparki/odometry", UpdateOdometry);
-        socket.Subscribe<Int16>("/sparki/set_servo", UpdateServo);
+        var forwardCommandSubscriber = socket.Subscribe<Float32>("/sparki/forward_command", ForwardCommand);
+        var turnCommandSubscriber = socket.Subscribe<Float32>("/sparki/turn_command", TurnCommand);
+        var turnSetServoSubscriber = socket.Subscribe<Int16>("/sparki/set_servo", SetServo);
+        
         addObstaclePublisher = socket.Advertise<String>("/game/add_obstacle");
         removeObstaclePublisher = socket.Advertise<String>("/game/remove_obstacle");
-        Debug.Log("Topics initialized!");
+        
+        Debug.Log("Topics initialized.");
     }
 
-    static void UpdateOdometry(Pose2D pose) {
-        Debug.Log($"Odometry update received! ({pose.x}, {pose.y}, {pose.theta})");
+    static void ForwardCommand(Float32 distance) {
+        // Ignore the distance because Sparki never moves more than 1 square.
+        
+        Debug.Log($"Moving Sparki forward {distance} cm.");
+        sparki.needToMove = true;
+    }
+
+    static void TurnCommand(Float32 angle) {
+        Debug.Log($"Turning Sparki {angle} degrees.");
+        sparki.needToTurn = (int)angle.data;
     }
     
-    static void UpdateServo(Int16 angle) {
-        Debug.Log($"Servo update received! ({angle.data})");
+    static void SetServo(Int16 angle) {
+        Debug.Log($"Setting Sparki's servo to {angle.data} degrees.");
+        sparki.angle = angle.data;
     }
 
     public void AddObstacle(Vector3 position, bool isTarget) {

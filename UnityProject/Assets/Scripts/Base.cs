@@ -2,6 +2,8 @@
 
 public class Base : MonoBehaviour {
     public ParticleSystem damageParticles;
+    public GameObject explosion;
+
     public int maxHealth;
     int particleThreshold;
     
@@ -20,6 +22,7 @@ public class Base : MonoBehaviour {
         }
 
         if (health <= 0) {
+            Instantiate(explosion, transform.position, Quaternion.identity);
             Destroy(gameObject);
         }
     }

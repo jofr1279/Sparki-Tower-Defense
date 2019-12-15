@@ -7,6 +7,7 @@ TagManager:
   - Raycast Blanket
   - Sparki
   - Tower
+  - Base
   layers:
   - Default
   - TransparentFX
