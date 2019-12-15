@@ -24,8 +24,8 @@ class World(object):
         self.valid_direction_x = [0, 0, -1, 1]
         self.valid_direction_y = [-1, 1, 0, 0]
 
-        self.obstacles = [[False] * size.x for _ in range(size.y)]
-        self.targets = [[False] * size.x for _ in range(size.y)]
+        self.obstacles = [[False] * size.y for _ in range(size.x)]
+        self.targets = [[False] * size.y for _ in range(size.x)]
 
         self._init_topics()
 
@@ -119,12 +119,12 @@ class World(object):
         @rtype: 2D list [[]]
         """
 
-        dist = [[0] * self.size.x for _ in range(self.size.y)]
-        prev = [[-1] * self.size.x for _ in range(self.size.y)]
+        dist = [[0] * self.size.y for _ in range(self.size.x)]
+        prev = [[-1] * self.size.y for _ in range(self.size.x)]
         q_cost = []
 
-        for y in range(self.size.y):
-            for x in range(self.size.x):
+        for x in range(self.size.x):
+            for y in range(self.size.y):
                 if not (self.sparki.position.x == x and self.sparki.position.y == y):
                     dist[x][y] = 999999
 
@@ -294,28 +294,50 @@ class World(object):
         if best_target is None:
             return None
 
-        laser_range = self.sparki.laser_range
+        l_r = self.sparki.laser_range
         rel_x = best_target.x - self.sparki.position.x
         rel_y = best_target.y - self.sparki.position.y
+
         # return a number between -90 (left) to 90 (right)
+        angle = 0
+
         if self.sparki.direction == NORTH:
+            if rel_y == 0: return 0
             # Center vector of (-laser_range,0)
-            #return (best_target.x * -laser_range)/(math.sqrt(pow(best_target.x,2)+pow(best_target.y,2))*laser_range)
-            0
-        if self.sparki.direction == SOUTH:
-            # Center vector of (laser_range,0)
-            #return (best_target.x * laser_range)/(math.sqrt(pow(best_target.x,2)+pow(best_target.y,2))*laser_range)
-            if (rel_y > 0): 
+            if (rel_y < 0): 
                 # Turn left
-                angle = -math.degrees(math.acos((best_target.x * laser_range)/(math.sqrt(pow(best_target.x,2)+pow(best_target.y,2))*laser_range)))
+                angle = -math.degrees(math.acos((rel_x * -l_r)/(math.sqrt(pow(rel_x,2)+pow(rel_y,2))*l_r)))
             else:
                 # Turn right
-                angle = math.degrees(math.acos((best_target.x * laser_range)/(math.sqrt(pow(best_target.x,2)+pow(best_target.y,2))*laser_range)))
-            return angle
+                angle = math.degrees(math.acos((rel_x * -l_r)/(math.sqrt(pow(rel_x,2)+pow(rel_y,2))*l_r)))
+        if self.sparki.direction == SOUTH:
+            if rel_y == 0: return 0
+            # Center vector of (laser_range,0)
+            if (rel_y > 0): 
+                # Turn left
+                angle = -math.degrees(math.acos((rel_x * l_r)/(math.sqrt(pow(rel_x,2)+pow(rel_y,2))*l_r)))
+            else:
+                # Turn right
+                angle = math.degrees(math.acos((rel_x * l_r)/(math.sqrt(pow(rel_x,2)+pow(rel_y,2))*l_r)))
         if self.sparki.direction == WEST:
-            0
+            if rel_x == 0: return 0
+		    # Center vector of (0,-laser_range)
+            if (rel_x > 0): 
+                # Turn left
+                angle = -math.degrees(math.acos((rel_y * -l_r)/(math.sqrt(pow(rel_x,2)+pow(rel_y,2))*l_r)))
+            else:
+                # Turn right
+                angle = math.degrees(math.acos((rel_y * -l_r)/(math.sqrt(pow(rel_x,2)+pow(rel_y,2))*l_r)))
+            #angle -= 90
         if self.sparki.direction == EAST:
-            0
-        
+            if rel_x == 0: return 0
+            # Center vector of (0,laser_range)
+            if (rel_x < 0): 
+                # Turn left
+                angle = -math.degrees(math.acos((rel_y * l_r)/(math.sqrt(pow(rel_x,2)+pow(rel_y,2))*l_r)))
+            else:
+                # Turn right
+                angle = math.degrees(math.acos((rel_y * l_r)/(math.sqrt(pow(rel_x,2)+pow(rel_y,2))*l_r)))
+            #angle += 90
 
-        return 0
+        return round(angle)
