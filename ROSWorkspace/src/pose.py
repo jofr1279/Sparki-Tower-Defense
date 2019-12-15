@@ -57,6 +57,8 @@ class Direction(object):
         @type direction: Direction
         """
 
+        # TODO: Make this not static
+
         return {
             NORTH: Vector2(-1, 0),
             EAST: Vector2(0, 1),
