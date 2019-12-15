@@ -11,10 +11,6 @@ if __name__ == '__main__':
 
     game = Game()
 
-    rate = rospy.Rate(5)
-    while not rospy.is_shutdown():
-        game.update()
-
-        rate.sleep()
-
     print 'Node "{}" node initialized.'.format(NODE_NAME)
+
+    rospy.spin()

@@ -32,6 +32,15 @@ class Direction(object):
     def __init__(self, num):
         self.num = num
 
+    def __repr__(self):
+        return ['NORTH', 'EAST', 'SOUTH', 'WEST'][self.num]
+
+    def right(self):
+        return [NORTH, EAST, SOUTH, WEST][self.num + 1 if self.num < 3 else 0]
+
+    def left(self):
+        return [NORTH, EAST, SOUTH, WEST][self.num - 1 if self.num > 0 else 3]
+
     @staticmethod
     def from_num(num):
         """ Converts a number ranging from 0 to 3 into a corresponding cardinal direction clockwise.
@@ -42,17 +51,17 @@ class Direction(object):
         return [NORTH, EAST, SOUTH, WEST][num]
 
     @staticmethod
-    def to_motor(direction):
-        """ Converts a direction into its corresponding motor power values.
+    def to_vector(direction):
+        """ Converts a direction into its corresponding Vector2.
 
         @type direction: Direction
         """
 
         return {
-            NORTH: (1, 1),
-            EAST: (1, -1),
-            SOUTH: (-1, -1),
-            WEST: (-1, 1)
+            NORTH: Vector2(-1, 0),
+            EAST: Vector2(0, 1),
+            SOUTH: Vector2(1, 0),
+            WEST: Vector2(0, -1)
         }[direction]
 
 

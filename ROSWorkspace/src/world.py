@@ -49,8 +49,8 @@ class World(object):
         return string
 
     def _init_topics(self):
-        rospy.Subscriber('/unity/add_object', String, self.add_object)
-        rospy.Subscriber('/unity/remove_object', String, self.remove_object)
+        rospy.Subscriber('/game/add_object', String, self.add_object)
+        rospy.Subscriber('/game/remove_object', String, self.remove_object)
 
     def _add_object(self, string):
         """
