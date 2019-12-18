@@ -463,9 +463,9 @@ def getSerialBytes():
             raise
 
         if inByte != SYNC.encode():
-            printDebug("Next byte is " + str(inByte), DEBUG_DEBUG)
+            printDebug("Next byte is '" + str(inByte) + "'", DEBUG_DEBUG)
 
-    printDebug("Finished fetching bytes, result is " + str(result), DEBUG_DEBUG)
+    printDebug("Finished fetching bytes, result is '" + str(result) + "'", DEBUG_DEBUG)
     return result.decode()
 
 
