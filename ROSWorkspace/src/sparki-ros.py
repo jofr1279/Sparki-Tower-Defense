@@ -597,8 +597,7 @@ def sendSerial(command, args=None):
         if len(message) > MAX_TRANSMISSION:
             printDebug("In sendSerial, messages must be " + str(MAX_TRANSMISSION) + " characters or fewer", DEBUG_ERROR)
 
-            # FIXME: The "stop" function does not exist and I'm not entirely sure what it should do
-            stop()  # done for safety -- in case robot is in motion
+            sendSerial(COMMAND_CODES['STOP'])
 
             raise RuntimeError("Messages sent to Sparki must be {} or fewer characters".format(str(MAX_TRANSMISSION)))
 
