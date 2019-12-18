@@ -580,9 +580,7 @@ def sendSerial(command, args=None):
 
     printDebug("In sendSerial, Sending command - " + command, DEBUG_DEBUG)
 
-    values = []  # this will hold what we're actually sending to Sparki
-
-    values.append(command)
+    values = [command]  # this will hold what we're actually sending to Sparki
 
     if args is not None:
         if isinstance(args, str):
