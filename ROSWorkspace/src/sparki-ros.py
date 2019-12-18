@@ -122,7 +122,7 @@ SPARKI_AXLE_DIAMETER = 0.085  # Distance between wheels, meters
 SPARKI_WHEEL_RADIUS = 0.03  # Radius of wheels, meters
 CYCLE_TIME = 0.05  # Minimum delay between cycles
 IR_CYCLE_TIME = 0.05  # Minimum Delay polling IR sensors
-LAST_IR_POLL = 0
+LAST_IR_POLL = None
 sparki_ir_sensors = [0, 0, 0, 0, 0]
 pub_sparki_odom, pub_sparki_state = None, None
 sparki_ping_requested = False
@@ -224,7 +224,7 @@ def update_and_publish_state(pub):
     state = {}
     state['servo'] = sparki_servo_theta
 
-    if rospy.Time.now().to_sec() - LAST_IR_POLL.to_sec() > IR_CYCLE_TIME:
+    if LAST_IR_POLL is None or rospy.Time.now().to_sec() - LAST_IR_POLL.to_sec() > IR_CYCLE_TIME:
         sparki_ir_sensors = getLine()
         LAST_IR_POLL = rospy.Time.now()
 
@@ -373,7 +373,7 @@ def init(com_port, print_versions=True):
     global serial_conn
     global serial_port
     global serial_is_connected
-    global DELAY_CONST
+    global DELAY_CONST, LAST_IR_POLL
 
     DELAY_CONST = rospy.Duration.from_sec(0.005)  # 5ms delay
 
