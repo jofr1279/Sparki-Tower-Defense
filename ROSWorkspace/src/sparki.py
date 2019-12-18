@@ -1,17 +1,18 @@
+import time
 import rospy
 
-from pose import Vector2, Direction, NORTH
-from helper import pose_to_vector, pose_to_direction, to_float_array
+from pose import Vector2, NORTH, Direction
+from config import CM_PER_GRID_CELL, SPARKI_RETRY_INTERVAL
 
 from geometry_msgs.msg import Pose2D
-from std_msgs.msg import Int16, Float32MultiArray
+from std_msgs.msg import Int16, Float32
 
 
 class Sparki(object):
     """ Describes Sparki's pose and abilities.
     """
 
-    def __init__(self, laser_range, servo_range):
+    def __init__(self, laser_range, servo_range, ready_function):
         """
         @type laser_range: int
         @param laser_range The range (in grid units) in which Sparki's laser can fire.
@@ -23,50 +24,44 @@ class Sparki(object):
 
         self.laser_range = laser_range
         self.servo_range = servo_range
+        self.ready_function = ready_function
 
-        self.position = Vector2(0, 0)
+        self.last_ready_call = time.time()
+
+        self.position = Vector2(5, 4)
         self.direction = NORTH
-
-        self.actual_position = Vector2(0, 0)
-        """ The Sparki's real-world position. """
-        self.actual_direction = 0
-        """ The Sparki's real-world direction (in degrees). """
 
         self._init_topics()
 
     def _init_topics(self):
-        rospy.Subscriber('/sparki/odometry', Pose2D, self._odometry_update)
+        rospy.Subscriber('/sparki/odometry', Pose2D, self.sparki_ready)
 
-        self.motor_publisher = rospy.Publisher('/sparki/motor_command', Float32MultiArray, queue_size=10)
+        self.move_publisher = rospy.Publisher('/sparki/forward_command', Float32, queue_size=10)
+        self.turn_publisher = rospy.Publisher('/sparki/turn_command', Float32, queue_size=10)
         self.servo_publisher = rospy.Publisher('/sparki/set_servo', Int16, queue_size=10)
 
-    def _odometry_update(self, pose):
-        """ Updates the position and direction data using the data given by the Sparki node.
+    def sparki_ready(self, _):
+        """ Called when Sparki's odometry is online, indicating he is ready for another command. """
 
-        @type pose: Pose2D
-        """
+        if time.time() - self.last_ready_call > SPARKI_RETRY_INTERVAL:
+            self.ready_function()
+            self.last_ready_call = time.time()
 
-        self.odometry_update(pose_to_vector(pose), pose_to_direction(pose))
+    def move(self):
+        """ Tells Sparki to move forward. """
 
-    def odometry_update(self, position, direction):
-        """ Updates the position and direction.
+        self.position += Direction.to_vector(self.direction)
+        self.move_publisher.publish(Float32(CM_PER_GRID_CELL))
 
-        @type position: Vector2
-        @type direction: Direction
-        """
+    def turn(self, angle):
+        """ Tells Sparki to turn. """
 
-        self.position = position
-        self.direction = direction
+        if angle < 0:
+            self.direction = self.direction.left()
+        else:
+            self.direction = self.direction.right()
 
-    def move(self, direction):
-        """ Sets Sparki to move in the specified direction. If None is passed, Sparki will stop.
-
-        @type direction: Direction | None
-        """
-
-        array = to_float_array((0, 0) if direction is None else Direction.to_motor(direction))
-
-        self.motor_publisher.publish(array)
+        self.turn_publisher.publish(Float32(angle))
 
     def look(self, angle):
         """ Sets Sparki's servo to look in the desired angle.
@@ -75,6 +70,4 @@ class Sparki(object):
         @param angle: The angle (in degrees) the servo should look at.
         """
 
-        assert -self.servo_range < angle < self.servo_range
-
-        self.servo_publisher(angle)
+        self.servo_publisher.publish(angle)

@@ -6,6 +6,7 @@ from std_msgs.msg import String
 
 from pose import NORTH, EAST, SOUTH, WEST, Vector2, Direction
 from sparki import Sparki
+from config import WORLD_SIZE
 
 
 class World(object):
@@ -49,8 +50,9 @@ class World(object):
         return string
 
     def _init_topics(self):
-        rospy.Subscriber('/unity/add_object', String, self.add_object)
-        rospy.Subscriber('/unity/remove_object', String, self.remove_object)
+        rospy.Subscriber('/game/add_obstacle', String, self._add_object)
+        rospy.Subscriber('/game/remove_obstacle', String, self._remove_object)
+        print('Topics initialized')
 
     def _add_object(self, string):
         """
@@ -58,8 +60,10 @@ class World(object):
         @type string: String
         """
 
+        print('here?', string.data)
+
         data = json.loads(string.data)
-        self.add_object(Vector2(data['x'], data['y']), data['target'])
+        self.add_object(Vector2((WORLD_SIZE.x / 2) - data['position']['y'], (WORLD_SIZE.y / 2) + data['position']['x'] - 1), data['is_target'])
 
     def _remove_object(self, string):
         """
@@ -77,7 +81,12 @@ class World(object):
         @type target: bool
         """
 
-        (self.targets if target else self.obstacles)[position.x][position.y] = True
+        print('Adding object...', position, target)
+
+        if target:
+            self.targets[position.x][position.y] = True
+        
+        self.obstacles[position.x][position.y] = True
 
     def remove_object(self, position):
         """
@@ -211,14 +220,14 @@ class World(object):
         """
 
         if self.sparki.direction == NORTH:
-            return coordinate.x <= 0 and coordinate.y >= -self.sparki.laser_range and coordinate.y <= self.sparki.laser_range
+            return coordinate.x <= 0 and -self.sparki.laser_range <= coordinate.y <= self.sparki.laser_range
         if self.sparki.direction == SOUTH:
-            return coordinate.x >= 0 and coordinate.y >= -self.sparki.laser_range and coordinate.y <= self.sparki.laser_range
+            return coordinate.x >= 0 and -self.sparki.laser_range <= coordinate.y <= self.sparki.laser_range
         if self.sparki.direction == WEST:
-            return coordinate.x <= self.sparki.laser_range and coordinate.x >= -self.sparki.laser_range and coordinate.y <= 0
+            return self.sparki.laser_range >= coordinate.x >= -self.sparki.laser_range and coordinate.y <= 0
         if self.sparki.direction == EAST:
-            return coordinate.x <= self.sparki.laser_range and coordinate.x >= -self.sparki.laser_range and coordinate.y >= 0
-        
+            return self.sparki.laser_range >= coordinate.x >= -self.sparki.laser_range and coordinate.y >= 0
+
     def best_target(self):
         """ Calculates the best target Sparki should shoot at. If there is a target in the path towards the goal, it
             should return that. If there is no target in the path, it should return the closest target. If there are no
@@ -236,21 +245,20 @@ class World(object):
         #        - self.targets
         #        - self.goal_position.x
         #        - self.goal_position.y
-        
+
         min_dist = 999999
-        # Store variables for readibility
+        # Store variables for readability
         x_offset = self.sparki.position.x
         y_offset = self.sparki.position.y
         radius = self.sparki.laser_range
-        
+
         # Set angle offset
-        if self.sparki.direction == NORTH: angle_offset = 90 
-        if self.sparki.direction == WEST: angle_offset = 180 
+        if self.sparki.direction == NORTH: angle_offset = 90
+        if self.sparki.direction == WEST: angle_offset = 180
         if self.sparki.direction == SOUTH: angle_offset = 270
         if self.sparki.direction == EAST: angle_offset = 360
         return_target = None
         # self.sparki.laser_range,servo_range
-        
 
         for i in range(self.size.x):
             for j in range(self.size.y):
@@ -258,7 +266,7 @@ class World(object):
                     # Check within laser range
                     rel_x = i - x_offset
                     rel_y = j - y_offset
-                    if (pow(rel_x,2) + pow(rel_y,2)) < pow(radius,2):
+                    if (pow(rel_x, 2) + pow(rel_y, 2)) < pow(radius, 2):
                         '''
                         # Check within servo range, x is col and y is row
                         left_x = radius*math.cos(math.radians((self.sparki.servo_range)+angle_offset))
@@ -268,19 +276,18 @@ class World(object):
                         print left_x,left_y,right_x,right_y
                         if (left_x < rel_x and left_y > rel_y and right_x > rel_x and right_y > rel_y):
                         '''
-                        if self.in_range(Vector2(rel_x,rel_y)):
+                        if self.in_range(Vector2(rel_x, rel_y)):
                             # TODO Use direction to check that it is in the path to goal for optimal shooting
                             '''
                             if i == self.goal_position.y or j == self.goal_position.x:
                                 return Vector2(i,j)
                             '''
                             # Find closest target
-                            if (pow(rel_x,2) + pow(rel_y,2)) < pow(min_dist,2):
-                                min_dist = pow(rel_x,2) + pow(rel_y,2)
-                                return_target = Vector2(i,j)
-                            
-        return return_target
+                            if (pow(rel_x, 2) + pow(rel_y, 2)) < pow(min_dist, 2):
+                                min_dist = pow(rel_x, 2) + pow(rel_y, 2)
+                                return_target = Vector2(i, j)
 
+        return return_target
 
     def best_target_angle(self):
         """ Calculates the angle (in degrees) Sparki's servo should face so that is faces the best target. If there are
@@ -302,42 +309,46 @@ class World(object):
         angle = 0
 
         if self.sparki.direction == NORTH:
-            if rel_y == 0: return 0
+            if rel_y == 0:
+                return 0
             # Center vector of (-laser_range,0)
-            if (rel_y < 0): 
+            if rel_y < 0:
                 # Turn left
-                angle = -math.degrees(math.acos((rel_x * -l_r)/(math.sqrt(pow(rel_x,2)+pow(rel_y,2))*l_r)))
+                angle = -math.degrees(math.acos((rel_x * -l_r) / (math.sqrt(pow(rel_x, 2) + pow(rel_y, 2)) * l_r)))
             else:
                 # Turn right
-                angle = math.degrees(math.acos((rel_x * -l_r)/(math.sqrt(pow(rel_x,2)+pow(rel_y,2))*l_r)))
+                angle = math.degrees(math.acos((rel_x * -l_r) / (math.sqrt(pow(rel_x, 2) + pow(rel_y, 2)) * l_r)))
         if self.sparki.direction == SOUTH:
-            if rel_y == 0: return 0
+            if rel_y == 0:
+                return 0
             # Center vector of (laser_range,0)
-            if (rel_y > 0): 
+            if rel_y > 0:
                 # Turn left
-                angle = -math.degrees(math.acos((rel_x * l_r)/(math.sqrt(pow(rel_x,2)+pow(rel_y,2))*l_r)))
+                angle = -math.degrees(math.acos((rel_x * l_r) / (math.sqrt(pow(rel_x, 2) + pow(rel_y, 2)) * l_r)))
             else:
                 # Turn right
-                angle = math.degrees(math.acos((rel_x * l_r)/(math.sqrt(pow(rel_x,2)+pow(rel_y,2))*l_r)))
+                angle = math.degrees(math.acos((rel_x * l_r) / (math.sqrt(pow(rel_x, 2) + pow(rel_y, 2)) * l_r)))
         if self.sparki.direction == WEST:
-            if rel_x == 0: return 0
-		    # Center vector of (0,-laser_range)
-            if (rel_x > 0): 
+            if rel_x == 0:
+                return 0
+            # Center vector of (0,-laser_range)
+            if rel_x > 0:
                 # Turn left
-                angle = -math.degrees(math.acos((rel_y * -l_r)/(math.sqrt(pow(rel_x,2)+pow(rel_y,2))*l_r)))
+                angle = -math.degrees(math.acos((rel_y * -l_r) / (math.sqrt(pow(rel_x, 2) + pow(rel_y, 2)) * l_r)))
             else:
                 # Turn right
-                angle = math.degrees(math.acos((rel_y * -l_r)/(math.sqrt(pow(rel_x,2)+pow(rel_y,2))*l_r)))
-            #angle -= 90
+                angle = math.degrees(math.acos((rel_y * -l_r) / (math.sqrt(pow(rel_x, 2) + pow(rel_y, 2)) * l_r)))
+            # angle -= 90
         if self.sparki.direction == EAST:
-            if rel_x == 0: return 0
+            if rel_x == 0:
+                return 0
             # Center vector of (0,laser_range)
-            if (rel_x < 0): 
+            if rel_x < 0:
                 # Turn left
-                angle = -math.degrees(math.acos((rel_y * l_r)/(math.sqrt(pow(rel_x,2)+pow(rel_y,2))*l_r)))
+                angle = -math.degrees(math.acos((rel_y * l_r) / (math.sqrt(pow(rel_x, 2) + pow(rel_y, 2)) * l_r)))
             else:
                 # Turn right
-                angle = math.degrees(math.acos((rel_y * l_r)/(math.sqrt(pow(rel_x,2)+pow(rel_y,2))*l_r)))
-            #angle += 90
+                angle = math.degrees(math.acos((rel_y * l_r) / (math.sqrt(pow(rel_x, 2) + pow(rel_y, 2)) * l_r)))
+            # angle += 90
 
         return round(angle)
