@@ -602,7 +602,7 @@ def sendSerial(command, args=None):
 
             raise RuntimeError("Messages sent to Sparki must be {} or fewer characters".format(str(MAX_TRANSMISSION)))
 
-        printDebug("Sending bytes " + str(message) + " (" + str(value) + ")", DEBUG_DEBUG)
+        printDebug("Sending bytes (" + str(value) + ")", DEBUG_DEBUG)
 
         try:
             serial_conn.write(message)
