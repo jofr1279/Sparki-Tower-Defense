@@ -151,7 +151,7 @@ def main(com_port):
         try:
             # Update and Publish Odometry
             update_and_publish_odometry(pub_sparki_odom, rospy.Time.now() - last_time)
-            last_time = time.time()
+            last_time = rospy.Time.now()
             # Update and Publish Sensors
             update_and_publish_state(pub_sparki_state)
         except serial.SerialException:
@@ -224,9 +224,9 @@ def update_and_publish_state(pub):
     state = {}
     state['servo'] = sparki_servo_theta
 
-    if (time.time() - LAST_IR_POLL > IR_CYCLE_TIME):
+    if rospy.Time.now().to_sec() - LAST_IR_POLL > IR_CYCLE_TIME:
         sparki_ir_sensors = getLine()
-        LAST_IR_POLL = time.time()
+        LAST_IR_POLL = rospy.Time.now()
 
     state['light_sensors'] = sparki_ir_sensors
 
@@ -401,7 +401,7 @@ def init(com_port, print_versions=True):
     init_message = getSerialString()
 
     if init_message:
-        init_time = time.time()
+        init_time = rospy.Time.now()
 
         printDebug("Sparki connection successful", DEBUG_ALWAYS)
     else:
@@ -642,7 +642,7 @@ def waitForSync():
 
     serial_conn.flushInput()  # get rid of any waiting bytes
 
-    start_time = time.time()
+    start_time = rospy.Time.now()
 
     inByte = -1
     loop_wait = 0
@@ -654,7 +654,7 @@ def waitForSync():
         loop_wait = .01  # pause this long each time through the loop
 
     while inByte != SYNC.encode():  # loop, doing nothing substantive, while we wait for SYNC
-        if time.time() > start_time + (CONN_TIMEOUT * retries):
+        if rospy.Time.now().to_sec() > start_time.to_sec() + (CONN_TIMEOUT * retries):
             if platform.system() == "Darwin":  # Macs seem to be extremely likely to timeout -- so we report at a different debug level
                 printDebug(
                     "In waitForSync, unable to sync with Sparki (this may not be due to power saving settings)",
