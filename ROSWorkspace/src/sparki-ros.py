@@ -130,7 +130,7 @@ sparki_ping_requested = False
 
 def main(com_port):
     global pub_sparki_odom, pub_sparki_state, serial_conn
-    rospy.init_node("sparki_driver_ros")
+    rospy.init_node("sparki_driver_ros", log_level=rospy.DEBUG)
     init(com_port)
 
     pub_sparki_odom = rospy.Publisher('/sparki/odometry', Pose2D, queue_size=10)
