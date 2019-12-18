@@ -47,12 +47,13 @@ public class ROS {
     }
 
     public void AddObstacle(Vector3 position, bool isTarget) {
+        var isTargetString = isTarget ? "true" : "false";
         var data = $"{{" +
                    $"    \"position\": {{" +
-                   $"        \"x:\" {position.x}," +
-                   $"        \"y:\" {position.z}" +
+                   $"        \"x\": {position.x}," +
+                   $"        \"y\": {position.z}" +
                    $"    }}," +
-                   $"    \"is_target\": {isTarget}" +
+                   $"    \"is_target\": {isTargetString}" +
                    $"}}";
         
         Debug.Log(data);
@@ -63,8 +64,8 @@ public class ROS {
     public void RemoveObstacle(Vector3 position) {
         var data = $"{{" +
                    $"    \"position\": {{" +
-                   $"        \"x:\" {position.x}," +
-                   $"        \"y:\" {position.z}" +
+                   $"        \"x\": {position.x}," +
+                   $"        \"y\": {position.z}" +
                    $"    }}" +
                    $"}}";
         
