@@ -224,7 +224,7 @@ def update_and_publish_state(pub):
     state = {}
     state['servo'] = sparki_servo_theta
 
-    if rospy.Time.now().to_sec() - LAST_IR_POLL > IR_CYCLE_TIME:
+    if rospy.Time.now().to_sec() - LAST_IR_POLL.to_sec() > IR_CYCLE_TIME:
         sparki_ir_sensors = getLine()
         LAST_IR_POLL = rospy.Time.now()
 
