@@ -626,7 +626,7 @@ def waitForSync():
 
     # Ensure we have waited long enough for the last blocking command to run
     if LAST_FINISH_TIME is not None and start_time < LAST_FINISH_TIME:
-        dur = LAST_FINISH_TIME - start_time
+        dur = (LAST_FINISH_TIME - start_time) + 5  # adding constant delay
         printDebug("Waiting {:.2f}s for blocking command to finish".format(dur.to_sec()), DEBUG_INFO)
 
         rospy.sleep(dur)
