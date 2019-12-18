@@ -192,11 +192,11 @@ def send_move_forward(data):
         print('Invalid move forward command received')
         print(str(data))
         return
-    printDebug('Move Forward Request Received', DEBUG_INFO)
 
     dist_in_cm = data.data * 100.0
     direction = 'FORWARD_CM' if dist_in_cm > 0 else 'BACKWARD_CM'
     dist_in_cm = abs(dist_in_cm)
+    printDebug(direction + ' Request Received, moving ' + str(dist_in_cm) + 'cm', DEBUG_INFO)
 
     sendSerial(COMMAND_CODES[direction], [dist_in_cm])
 
