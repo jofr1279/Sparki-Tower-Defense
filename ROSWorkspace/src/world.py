@@ -6,6 +6,7 @@ from std_msgs.msg import String
 
 from pose import NORTH, EAST, SOUTH, WEST, Vector2, Direction
 from sparki import Sparki
+from config import WORLD_SIZE
 
 
 class World(object):
@@ -49,8 +50,9 @@ class World(object):
         return string
 
     def _init_topics(self):
-        rospy.Subscriber('/game/add_object', String, self.add_object)
-        rospy.Subscriber('/game/remove_object', String, self.remove_object)
+        rospy.Subscriber('/game/add_obstacle', String, self._add_object)
+        rospy.Subscriber('/game/remove_obstacle', String, self._remove_object)
+        print('Topics initialized')
 
     def _add_object(self, string):
         """
@@ -58,8 +60,10 @@ class World(object):
         @type string: String
         """
 
+        print('here?', string.data)
+
         data = json.loads(string.data)
-        self.add_object(Vector2(data['x'], data['y']), data['target'])
+        self.add_object(Vector2((WORLD_SIZE.x / 2) - data['position']['y'], (WORLD_SIZE.y / 2) + data['position']['x'] - 1), data['is_target'])
 
     def _remove_object(self, string):
         """
@@ -77,7 +81,12 @@ class World(object):
         @type target: bool
         """
 
-        (self.targets if target else self.obstacles)[position.x][position.y] = True
+        print('Adding object...', position, target)
+
+        if target:
+            self.targets[position.x][position.y] = True
+        
+        self.obstacles[position.x][position.y] = True
 
     def remove_object(self, position):
         """

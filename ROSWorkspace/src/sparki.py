@@ -28,7 +28,7 @@ class Sparki(object):
 
         self.last_ready_call = time.time()
 
-        self.position = Vector2(0, 0)
+        self.position = Vector2(5, 4)
         self.direction = NORTH
 
         self._init_topics()
@@ -70,6 +70,4 @@ class Sparki(object):
         @param angle: The angle (in degrees) the servo should look at.
         """
 
-        assert -self.servo_range < angle < self.servo_range
-
-        self.servo_publisher(angle)
+        self.servo_publisher.publish(angle)
