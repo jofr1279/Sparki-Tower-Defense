@@ -145,19 +145,19 @@ def main(com_port):
     sub_sparki_odom = rospy.Subscriber('/sparki/set_odometry', Pose2D, set_odometry)
     sub_sparki_servo = rospy.Subscriber('/sparki/set_servo', Int16, set_servo)
 
-    last_time = time.time()
+    last_time = rospy.Time.now()
+    cycle_var = rospy.Rate(1.0/CYCLE_TIME)
     while not rospy.is_shutdown():
         try:
-            cycle_start = time.time()
             # Update and Publish Odometry
-            update_and_publish_odometry(pub_sparki_odom, time.time() - last_time)
+            update_and_publish_odometry(pub_sparki_odom, rospy.Time.now() - last_time)
             last_time = time.time()
             # Update and Publish Sensors
             update_and_publish_state(pub_sparki_state)
-            rospy.sleep(max(0, CYCLE_TIME - (time.time() - cycle_start)))
         except serial.SerialException:
             rospy.loginfo("Serial port reset for some reason! Reconnecting.")
             init(com_port)
+        cycle_var.sleep()
 
 
 def set_odometry(data):
@@ -242,8 +242,8 @@ def update_and_publish_odometry(pub, time_delta):
     global SPARKI_LINEAR_SPEED, SPARKI_AXLE_DIAMETER
     global motor_speed_left, motor_speed_right
     global odometry_x, odometry_y, odometry_theta
-    left_wheel_dist = (motor_speed_left * time_delta * SPARKI_LINEAR_SPEED)
-    right_wheel_dist = (motor_speed_right * time_delta * SPARKI_LINEAR_SPEED)
+    left_wheel_dist = (motor_speed_left * time_delta.to_sec() * SPARKI_LINEAR_SPEED)
+    right_wheel_dist = (motor_speed_right * time_delta.to_sec() * SPARKI_LINEAR_SPEED)
 
     odometry_x += math.cos(odometry_theta) * (left_wheel_dist + right_wheel_dist) / 2.
     odometry_y += math.sin(odometry_theta) * (left_wheel_dist + right_wheel_dist) / 2.
@@ -610,7 +610,7 @@ def sendSerial(command, args=None):
             raise
 
     serial_conn.flush()  # ensure the buffer is flushed
-    time.sleep(0.01)
+    rospy.sleep(0.01)
 
 
 def waitForSync():
