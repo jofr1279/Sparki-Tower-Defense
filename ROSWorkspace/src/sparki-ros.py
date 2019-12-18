@@ -608,7 +608,7 @@ def sendSerial(command, args=None):
             raise
 
     serial_conn.flush()  # ensure the buffer is flushed
-    rospy.sleep(0.01)
+    rospy.sleep(0.05)
 
 
 def waitForSync():
