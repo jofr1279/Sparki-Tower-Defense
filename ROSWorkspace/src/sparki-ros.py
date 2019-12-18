@@ -106,6 +106,7 @@ SERVO_RIGHT = 80
 # ***** TIMING VARIABLES ***** #
 LAST_FINISH_TIME = None
 DELAY_CONST = None
+init_time = None
 
 serial_port = None  # save the serial port on which we're connected
 serial_conn = None  # hold the pyserial object
