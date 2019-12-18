@@ -9,6 +9,7 @@ public class Sparki : MonoBehaviour {
     public ParticleSystem fireParticles;
     public ParticleSystem damageParticles;
     public GameObject explosion;
+    public GameObject model;
 
     int health;
     float cooldown;
@@ -42,6 +43,10 @@ public class Sparki : MonoBehaviour {
         else {
             Fire();
             cooldown = maxCooldown;
+        }
+
+        if (needToMove || needToTurn != 0) {
+            model.SetActive(false);
         }
 
         if (needToMove) {

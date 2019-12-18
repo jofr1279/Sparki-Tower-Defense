@@ -9584,7 +9584,7 @@ MonoBehaviour:
   explosion: {fileID: 9147274567689174461, guid: 15c0cf17646b7d14bbfb2e8709cb6e4a,
     type: 3}
   range: 3
-  maxHealth: 150
+  maxHealth: 9999
   maxCooldown: 1
   damage: 20
 --- !u!82 &354864281149083936
