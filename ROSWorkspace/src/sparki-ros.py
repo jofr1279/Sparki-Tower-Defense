@@ -105,6 +105,7 @@ SERVO_RIGHT = 80
 
 # ***** TIMING VARIABLES ***** #
 LAST_FINISH_TIME = None
+DELAY_CONST = None
 
 serial_port = None  # save the serial port on which we're connected
 serial_conn = None  # hold the pyserial object
@@ -371,6 +372,9 @@ def init(com_port, print_versions=True):
     global serial_conn
     global serial_port
     global serial_is_connected
+    global DELAY_CONST
+
+    DELAY_CONST = rospy.Duration.from_sec(0.005)  # 5ms delay
 
     printDebug("In init, com_port is " + str(com_port), DEBUG_INFO)
 
@@ -626,7 +630,7 @@ def waitForSync():
 
     # Ensure we have waited long enough for the last blocking command to run
     if LAST_FINISH_TIME is not None and start_time < LAST_FINISH_TIME:
-        dur = (LAST_FINISH_TIME - start_time) + 5  # adding constant delay
+        dur = (LAST_FINISH_TIME - start_time) + DELAY_CONST  # adding constant delay
         printDebug("Waiting {:.2f}s for blocking command to finish".format(dur.to_sec()), DEBUG_INFO)
 
         rospy.sleep(dur)
